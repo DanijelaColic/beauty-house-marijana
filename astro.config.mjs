@@ -5,14 +5,18 @@ import tailwind from "@astrojs/tailwind";
 import sitemap from "@astrojs/sitemap";
 
 export default defineConfig({
-  // promijeni na produkcijsku domenu nakon deploya
-  site: "http://localhost:4321",
+  // Stavi produkcijsku domenu kad je deploy gotov
+  site: "https://beauty-house-marijana.vercel.app",
+
   integrations: [
     react(),
     tailwind({
-      applyBaseStyles: false, // koristimo svoje global.css base stilove
+      applyBaseStyles: false, // koristimo vlastite global.css stilove
     }),
     sitemap(),
   ],
-  server: { port: 4321 },
+
+  server: {
+    port: 4321, // lokalni dev port
+  },
 });
