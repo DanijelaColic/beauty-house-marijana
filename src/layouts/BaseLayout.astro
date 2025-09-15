@@ -1,0 +1,84 @@
+---
+import "../styles/global.css";
+
+export interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  canonical?: string;
+}
+
+const {
+  title = "Beauty House by Marijana Talović — Frizerski salon u Osijeku",
+  description = "Elegantna njega kose u Osijeku. Brze online rezervacije i vrhunska usluga.",
+  ogImage = "/og-image.png",
+  canonical = "http://localhost:4321", // postavi produkcijsku domenu nakon deploya
+} = Astro.props;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "HairSalon",
+  "name": "Beauty House by Marijana Talović",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Ulica Jela 79",
+    "addressLocality": "Osijek",
+    "postalCode": "31000",
+    "addressCountry": "HR"
+  },
+  "telephone": "+38531280678",
+  "url": canonical,
+  "image": ogImage,
+  "openingHoursSpecification": [
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "08:00", "closes": "20:00" },
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "08:00", "closes": "14:00" }
+  ]
+};
+---
+<!DOCTYPE html>
+<html lang="hr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="index,follow" />
+    <meta name="theme-color" content="#A89E92" />
+
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- CSP: proširi domene po potrebi -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      base-uri 'self';
+      object-src 'none';
+      img-src 'self' data: blob: https:;
+      font-src 'self' https: data:;
+      style-src 'self' 'unsafe-inline';
+      script-src 'self' 'unsafe-inline';
+      connect-src 'self' https:;
+      frame-src 'self' https://*.zoyya.com https://*.zoyya.net https://*.google.com https://www.google.com https://maps.google.com;
+      frame-ancestors 'self';
+      form-action 'self';
+      upgrade-insecure-requests;
+    ">
+
+    <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+    <title>{title}</title>
+  </head>
+  <body class="bg-background text-textPrimary">
+    <slot />
+  </body>
+</html>

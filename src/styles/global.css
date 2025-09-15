@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   Global
+   ========================================================= */
+:root {
+  color-scheme: light;
+}
+
+html:focus-within {
+  scroll-behavior: smooth;
+}
+
+html, body {
+  @apply bg-background text-textPrimary font-sans;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, svg, video, canvas, audio, iframe, embed, object {
+  display: block;
+  max-width: 100%;
+}
+
+/* Links */
+a {
+  @apply text-primary underline-offset-2 transition;
+}
+a:hover {
+  @apply underline;
+}
+
+/* Focus (WCAG) */
+:focus-visible {
+  @apply outline-none ring-2 ring-gold/60 ring-offset-2 ring-offset-background rounded-md;
+}
+
+/* =========================================================
+   UI Primitives
+   ========================================================= */
+
+/* Buttons */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-medium transition shadow-soft;
+}
+
+.btn-primary {
+  @apply btn bg-primary text-white hover:brightness-110 active:scale-[.98];
+}
+
+.btn-secondary {
+  @apply btn bg-gold text-white hover:brightness-110 active:scale-[.98];
+}
+
+.btn-outline {
+  @apply btn border border-gold text-textPrimary bg-transparent hover:bg-gold/10 active:scale-[.98];
+}
+
+.btn:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-outline:disabled {
+  @apply opacity-60 cursor-not-allowed;
+}
+
+/* Cards / Surfaces */
+.card {
+  @apply bg-surface rounded-2xl border border-border shadow-soft;
+}
+
+/* Chips (npr. za prijedloge termina) */
+.chip {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border hover:border-primary hover:text-primary transition;
+}
+
+/* Inputs (osnovni stil; Tailwind klase i dalje rade) */
+.input, .select, .textarea {
+  @apply w-full rounded-xl border border-border bg-white px-3 py-2 text-textPrimary placeholder:text-textSecondary/60 focus:border-gold focus:ring-2 focus:ring-gold/40 outline-none transition;
+}
+
+/* Toast (koristi se u SmartSuggestions) */
+.toast {
+  @apply fixed bottom-4 right-4 bg-primary text-white px-4 py-3 rounded-2xl shadow-soft;
+}
+
+/* =========================================================
+   Typography helpers
+   ========================================================= */
+
+.muted {
+  @apply text-textSecondary;
+}
+
+/* Sekcijski naslovi sa zlatnom crtom */
+.section-title {
+  @apply text-2xl md:text-3xl font-bold text-textPrimary relative;
+}
+.section-title::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 4px;
+  background-color: theme('colors.gold');
+  border-radius: 9999px;
+  margin-top: 0.75rem;
+}
+
+/* =========================================================
+   Layout helpers
+   ========================================================= */
+
+.container-narrow {
+  @apply mx-auto max-w-3xl px-4;
+}
+.container-wide {
+  @apply mx-auto max-w-7xl px-4;
+}

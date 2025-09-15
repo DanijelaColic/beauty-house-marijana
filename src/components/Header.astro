@@ -1,0 +1,49 @@
+---
+const phone = "+38531280678";
+---
+
+<!-- tanji taupe header (≈64px) -->
+<header class="sticky top-0 z-50 bg-headerTaupe shadow-[0_2px_12px_rgba(0,0,0,0.18)]">
+  <nav class="mx-auto max-w-7xl px-4 h-20 flex items-center justify-between">
+    <!-- Logo + naziv -->
+    <a href="/" class="flex items-center gap-3 no-underline">
+      <img src="/new-logo.png" alt="Beauty House by Marijana Talović — logo" class="w-16 h-16 object-contain" />
+      <span class="text-base md:text-lg font-semibold text-white/95">Beauty House by Marijana Talović</span>
+    </a>
+
+    <!-- Desktop navigacija -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="/" class="text-[15px] text-white/90 hover:text-white">Početna</a>
+      <a href="#usluge" class="text-[15px] text-white/90 hover:text-white">Usluge</a>
+      <a href="#about" class="text-[15px] text-white/90 hover:text-white">O nama</a>
+      <a href="#kontakt" class="text-[15px] text-white/90 hover:text-white">Kontakt</a>
+
+      <!-- kompaktniji CTA -->
+      <a
+        href="#rezervacije"
+        class="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-ctaDark text-white font-medium hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+      >
+        Rezervacija
+      </a>
+    </div>
+
+    <!-- Mobile izbornik -->
+    <details class="md:hidden relative">
+      <summary
+        class="list-none p-1.5 -mr-1.5 rounded-lg text-white/95 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 cursor-pointer"
+        aria-label="Otvori izbornik"
+      >
+        <svg width="24" height="24" fill="none" stroke="currentColor" class="text-white">
+          <path stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </summary>
+      <div class="absolute right-0 mt-2 w-56 rounded-xl bg-headerTaupe text-white shadow-[0_8px_24px_rgba(0,0,0,0.18)] overflow-hidden">
+        <a href="/" class="block px-4 py-2 hover:bg-white/10">Početna</a>
+        <a href="#usluge" class="block px-4 py-2 hover:bg-white/10">Usluge</a>
+        <a href="#about" class="block px-4 py-2 hover:bg-white/10">O nama</a>
+        <a href="#kontakt" class="block px-4 py-2 hover:bg-white/10">Kontakt</a>
+        <a href="#rezervacije" class="block px-4 py-2 bg-ctaDark text-center">Rezervacija</a>
+      </div>
+    </details>
+  </nav>
+</header>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://salon-aurora.hr/sitemap-index.xml

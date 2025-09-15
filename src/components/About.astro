@@ -1,0 +1,40 @@
+---
+// About.astro
+---
+<section
+  id="about"
+  class="scroll-mt-16 bg-surface text-textPrimary"
+>
+  <div class="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+    <!-- Naslov sekcije -->
+    <header class="mb-8 text-center md:text-left">
+      <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight">
+        O nama
+      </h2>
+      <div class="mt-2 h-1 w-16 bg-gold rounded-full mx-auto md:mx-0"></div>
+    </header>
+
+    <!-- Layout slika + tekst -->
+    <div class="grid items-center gap-8 md:grid-cols-2">
+      <!-- Lijevo: slika -->
+      <div class="overflow-hidden rounded-2xl bg-[#EDE6DD] shadow">
+        <img
+          src="/team/team-group.jpg"
+          alt="Tim salona Beauty House by Marijana Talović"
+          class="w-full h-auto rounded-2xl"
+          loading="lazy"
+        />
+      </div>
+
+      <!-- Desno: tekst -->
+      <div class="text-center md:text-left">
+        <p class="text-base sm:text-lg leading-relaxed text-textSecondary">
+          U <strong>Beauty House by Marijana Talović</strong> salon uspješno radi već
+          20 godina. Izrastao je u mjesto koje ljudi prepoznaju po kvaliteti, a naš
+          glavni cilj je pružiti vrhunsku uslugu. Sve što radimo temeljimo na velikoj
+          posvećenosti i strasti prema njezi kose i zadovoljstvu klijenata.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

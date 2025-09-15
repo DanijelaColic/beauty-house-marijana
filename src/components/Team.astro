@@ -1,0 +1,42 @@
+---
+// Team.astro
+const team = [
+  { name: "Marijana Talović", src: "/team/team-1.jpg" },
+  { name: "Ana", src: "/team/team-2.jpg" },
+  { name: "Ivana", src: "/team/team-3.jpg" },
+  { name: "Martina", src: "/team/team-4.jpg" },
+  { name: "Sara", src: "/team/team-5.jpg" },
+  { name: "Djelatnica 6", src: "/team/team-6.jpg" },
+];
+---
+
+<section id="tim" class="scroll-mt-16 bg-surface text-textPrimary">
+  <div class="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+    <!-- Naslov -->
+    <header class="mb-8 text-center">
+      <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight">
+        Naš tim
+      </h2>
+      <div class="mt-2 h-1 w-16 bg-gold rounded-full mx-auto"></div>
+    </header>
+
+    <!-- Grid fotki -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+      {team.map((m) => (
+        <figure class="text-center">
+          <div class="overflow-hidden rounded-full aspect-square mx-auto shadow">
+            <img
+              src={m.src}
+              alt={m.name}
+              class="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+          <figcaption class="mt-2 text-sm sm:text-base text-textSecondary font-medium">
+            {m.name}
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>
