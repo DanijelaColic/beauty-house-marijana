@@ -7,6 +7,7 @@ import sitemap from "@astrojs/sitemap";
 export default defineConfig({
   // Stavi produkcijsku domenu kad je deploy gotov
   site: "https://beauty-house-marijana.vercel.app",
+  output: "hybrid", // Hybrid mode za API rute
 
   integrations: [
     react(),

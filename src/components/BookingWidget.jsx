@@ -1,25 +1,26 @@
-const ZOY_URL = import.meta.env.PUBLIC_ZOYYA_WIDGET_URL;
-
 export default function BookingWidget() {
-  if (!ZOY_URL) {
-    return (
-      <div className="card p-6">
-        <p className="text-sm text-slate-600">
-          <strong>Postavi PUBLIC_ZOYYA_WIDGET_URL</strong> u <code>.env</code> kako bi se prikazao widget.
+  return (
+    <div className="bg-white rounded-2xl shadow-soft p-6 border border-border">
+      <h3 className="text-xl font-semibold mb-4 text-textPrimary">Rezervirajte termin</h3>
+      <p className="text-textSecondary mb-6">
+        Kliknite na gumb ispod za rezervaciju termina kroz naš novi booking sustav.
+      </p>
+      <div className="text-center">
+        <a 
+          href="/rezervacije" 
+          className="btn-primary inline-flex items-center gap-2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          Rezerviraj termin
+        </a>
+      </div>
+      <div className="mt-4 text-center">
+        <p className="text-xs text-textSecondary">
+          Brzo, sigurno i jednostavno rezerviranje
         </p>
       </div>
-    );
-  }
-  return (
-    <div className="w-full card p-0 overflow-hidden">
-      <iframe
-        src={ZOY_URL}
-        title="Zoyya — Rezervacije"
-        className="w-full min-h-[720px]"
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-        allow="payment"
-      />
     </div>
   );
 }
