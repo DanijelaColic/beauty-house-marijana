@@ -1,0 +1,123 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Hero from "../components/Hero.astro";
+import Services from "../components/Services.astro";
+import Footer from "../components/Footer.astro";
+import About from "../components/About.astro";
+import Team from "../components/Team.astro";
+
+
+import SmartSuggestions from "../components/SmartSuggestions.jsx";
+import BookingWidget from "../components/BookingWidget.jsx";
+
+const services = [
+  { name: "Šišanje", description: "Pranje, šišanje i styling.", duration: 45, price: 25 },
+  { name: "Bojanje", description: "Bojanje cijele kose ili izrast.", duration: 90, price: 60 },
+  { name: "Styling", description: "Feniranje i/ili kovrče.", duration: 30, price: 20 },
+  { name: "Muško šišanje", description: "Pranje i šišanje.", duration: 30, price: 15 },
+  { name: "Dječje šišanje", description: "Za djecu do 12 godina.", duration: 25, price: 12 },
+  { name: "Njega kose", description: "Maska, njega i masaža vlasišta.", duration: 30, price: 18 },
+];
+
+const team = [
+  { name: "Ana", role: "Voditeljica salona", spec: "Šišanja & bojanja" },
+  { name: "Ivana", role: "Frizerka", spec: "Styling & njega" },
+  { name: "Martina", role: "Frizerka", spec: "Muška šišanja" },
+  { name: "Sara", role: "Frizerka", spec: "Njega vlasišta" },
+];
+
+// ✅ novi podaci brenda
+const address = "Ulica Jela 79, Osijek";
+const phoneDisplay = "031 280 678";
+const phoneLink = "+38531280678";
+const email = "info@beautyhouse.hr";
+const hours = ["Pon–Pet 08–20", "Sub 08–14", "Ned zatvoreno"];
+---
+<BaseLayout>
+  <Header />
+
+  <main id="sadrzaj">
+    <!-- HERO -->
+    <Hero />
+
+    <!-- USLUGE -->
+    <section id="usluge" aria-labelledby="usluge-title" class="container-wide py-16">
+      <div class="flex items-baseline justify-between gap-4">
+        <h2 id="usluge-title" class="section-title">Usluge</h2>
+      </div>
+
+      <Services />
+
+      <About />
+      <Team />
+
+
+    <!-- LOKACIJA & KONTAKT -->
+    <section id="kontakt" aria-labelledby="kontakt-title" class="container-wide py-16">
+      <h2 id="kontakt-title" class="section-title">Lokacija &amp; kontakt</h2>
+
+      <div class="grid md:grid-cols-2 gap-8 mt-8 items-start">
+        <div class="card p-6">
+          <ul class="space-y-3">
+            <li>
+              <strong>Adresa:</strong>
+              <a
+                class="ml-2"
+                href="https://maps.google.com/?q=Ulica+Jela+79,+Osijek"
+                target="_blank"
+                rel="noopener"
+                aria-label="Otvori lokaciju na Google kartama"
+              >
+                {address}
+              </a>
+            </li>
+            <li>
+              <strong>Telefon:</strong>
+              <a class="ml-2" href={"tel:" + phoneLink}>{phoneDisplay}</a>
+            </li>
+            <li>
+              <strong>E-mail:</strong>
+              <a class="ml-2" href={"mailto:" + email}>{email}</a>
+            </li>
+            <li>
+              <strong>Radno vrijeme:</strong>
+              <span class="ml-2">{hours.join(" • ")}</span>
+            </li>
+          </ul>
+
+          <div class="flex gap-3 mt-6">
+            <a href="#rezervacije" class="btn-primary" aria-label="Idi na rezervacije">Rezerviraj termin</a>
+            <a href="#usluge" class="btn-secondary" aria-label="Pogledaj sve usluge">Pogledaj usluge</a>
+          </div>
+        </div>
+
+        <iframe
+          class="w-full h-72 card p-0 overflow-hidden"
+          src="https://www.google.com/maps?q=Ulica%20Jela%2079%2C%20Osijek&output=embed"
+          title="Google Maps — Ulica Jela 79, Osijek"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        />
+      </div>
+    </section>
+
+    <!-- REZERVACIJE (AI + ZOYYA) -->
+    <section id="rezervacije" aria-labelledby="rez-title" class="container-wide py-16">
+      <h2 id="rez-title" class="section-title">Rezervacije</h2>
+      <p class="muted mt-2">
+        Prvo pogledaj naše prijedloge termina, zatim potvrdi u Zoyya widgetu.
+      </p>
+
+      <div class="mt-6">
+        <SmartSuggestions client:load />
+      </div>
+
+      <div class="mt-6">
+        <BookingWidget client:only="react" />
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
