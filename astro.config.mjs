@@ -1,23 +1,23 @@
-// astro.config.mjs
 import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import tailwind from "@astrojs/tailwind";
 import sitemap from "@astrojs/sitemap";
+import vercel from "@astrojs/vercel/server";
 
 export default defineConfig({
-  // Stavi produkcijsku domenu kad je deploy gotov
   site: "https://beauty-house-marijana.vercel.app",
-  output: "hybrid", // Hybrid mode za API rute
-
+  output: "server",   // VAŽNO: API rute rade samo u server modu
+  adapter: vercel(),  // Vercel adapter
+  
   integrations: [
     react(),
     tailwind({
-      applyBaseStyles: false, // koristimo vlastite global.css stilove
+      applyBaseStyles: false,
     }),
     sitemap(),
   ],
 
   server: {
-    port: 4321, // lokalni dev port
+    port: 4321,
   },
 });
