@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly PUBLIC_BUSINESS_NAME: string;
   readonly PUBLIC_BUSINESS_EMAIL: string;
   readonly PUBLIC_BUSINESS_TIMEZONE: string;
+  readonly RESEND_API_KEY: string;
 }
 
 interface ImportMeta {

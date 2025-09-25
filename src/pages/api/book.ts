@@ -1,9 +1,10 @@
 // API route for creating bookings
 import type { APIRoute } from 'astro';
 import { bookingCreateRequestSchema } from '@/lib/validation';
+import { db } from '@/lib/supabase';
+import { sendBookingConfirmation, sendAdminNotification } from '@/lib/email';
 
 export const prerender = false;
-import { db } from '@/lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -85,9 +86,30 @@ export const POST: APIRoute = async ({ request }) => {
       ics: '#', // TODO: Generate ICS file
     };
 
-    // 6. TODO: Send email confirmation (implement later)
-    console.log('📧 Email potvrda bi bila poslana na:', booking.clientEmail);
-    console.log('📅 Rezervacija kreirana:', booking.id);
+    // 6. Send email confirmations
+    try {
+      const emailData = {
+        clientName: booking.clientName,
+        clientEmail: booking.clientEmail,
+        serviceName: service.name,
+        startAt: booking.startAt,
+        endAt: booking.endAt,
+        bookingId: booking.id,
+        cancelToken: booking.cancelToken,
+        notes: booking.notes,
+      };
+
+      // Send confirmation to client
+      await sendBookingConfirmation(emailData);
+      
+      // Send notification to admin
+      await sendAdminNotification(emailData);
+      
+      console.log('📧 Emails sent successfully');
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Don't fail the booking if email fails
+    }
 
     // 7. Successful response
     return new Response(
