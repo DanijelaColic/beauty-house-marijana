@@ -1,12 +1,9 @@
 import { defineConfig } from "astro/config";
-import react from "@astrojs/react";
 import tailwind from "@astrojs/tailwind";
 import sitemap from "@astrojs/sitemap";
-import vercel from "@astrojs/vercel/server"; // VAŽNO
 
 export default defineConfig({
-  site: "https://beauty-house-marijana.vercel.app",
-  output: "server",
-  adapter: vercel(),
-  integrations: [react(), tailwind({ applyBaseStyles: false }), sitemap()],
+  site: "https://tvoja-domena.hr", // po želji
+  output: "static",
+  integrations: [tailwind(), sitemap()],
 });
