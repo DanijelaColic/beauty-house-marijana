@@ -6,18 +6,7 @@ import vercel from "@astrojs/vercel/server";
 
 export default defineConfig({
   site: "https://beauty-house-marijana.vercel.app",
-  output: "server",   // VAŽNO: API rute rade samo u server modu
-  adapter: vercel(),  // Vercel adapter
-  
-  integrations: [
-    react(),
-    tailwind({
-      applyBaseStyles: false,
-    }),
-    sitemap(),
-  ],
-
-  server: {
-    port: 4321,
-  },
+  output: "server",
+  adapter: vercel(),
+  integrations: [react(), tailwind({ applyBaseStyles: false }), sitemap()],
 });
