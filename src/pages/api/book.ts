@@ -142,10 +142,17 @@ export const POST: APIRoute = async ({ request }) => {
   } catch (error) {
     console.error('Error creating booking:', error);
     
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
     return new Response(
       JSON.stringify({
         success: false,
         error: 'Dogodila se greška pri kreiranju rezervacije',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       }),
       { 
         status: 500,

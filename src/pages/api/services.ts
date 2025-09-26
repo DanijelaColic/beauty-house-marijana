@@ -23,10 +23,17 @@ export const GET: APIRoute = async () => {
   } catch (error) {
     console.error('Error fetching services:', error);
     
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
     return new Response(
       JSON.stringify({
         success: false,
         error: 'Greška pri dohvaćanju usluga',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       }),
       {
         status: 500,

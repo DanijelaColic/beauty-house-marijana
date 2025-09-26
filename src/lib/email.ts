@@ -1,7 +1,12 @@
 // Email service using Resend
 import { Resend } from 'resend';
 
-const resend = new Resend(import.meta.env.RESEND_API_KEY);
+const resendApiKey = import.meta.env.RESEND_API_KEY;
+if (!resendApiKey) {
+  console.error('Missing RESEND_API_KEY environment variable');
+}
+
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export interface BookingEmailData {
   clientName: string;
@@ -15,6 +20,11 @@ export interface BookingEmailData {
 }
 
 export async function sendBookingConfirmation(data: BookingEmailData): Promise<boolean> {
+  if (!resend) {
+    console.warn('Resend not configured, skipping email send');
+    return true; // Don't fail the booking if email is not configured
+  }
+
   try {
     const { error } = await resend.emails.send({
       from: 'Beauty House by Marijana Talović <onboarding@resend.dev>',
@@ -37,6 +47,11 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<b
 }
 
 export async function sendAdminNotification(data: BookingEmailData): Promise<boolean> {
+  if (!resend) {
+    console.warn('Resend not configured, skipping admin notification');
+    return true; // Don't fail the booking if email is not configured
+  }
+
   try {
     const { error } = await resend.emails.send({
       from: 'Beauty House by Marijana Talović <onboarding@resend.dev>',

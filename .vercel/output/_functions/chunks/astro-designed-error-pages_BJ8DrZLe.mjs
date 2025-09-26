@@ -12,7 +12,7 @@ const ACTION_QUERY_PARAMS$1 = {
   actionName: "_action"};
 const ACTION_RPC_ROUTE_PATTERN = "/_actions/[...path]";
 
-const __vite_import_meta_env__ = {"ASSETS_PREFIX": undefined, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_SITE_URL": ":https://beauty-house-marijana.vercel.app/", "PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6aHBhemhleWVtZG1ydHpkY2tsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjgxOTcsImV4cCI6MjA3NDIwNDE5N30.n48ZTt7xco6M4nQRRvrgf3W91GNq6JzwsGIZ_IcBLpo", "PUBLIC_SUPABASE_URL": "https://fzhpazheyemdmrtzdckl.supabase.co", "SITE": "https://tvoja-domena.hr", "SSR": true};
+const __vite_import_meta_env__ = {"ASSETS_PREFIX": undefined, "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "PUBLIC_SITE_URL": ":https://beauty-house-marijana.vercel.app/", "PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6aHBhemhleWVtZG1ydHpkY2tsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjgxOTcsImV4cCI6MjA3NDIwNDE5N30.n48ZTt7xco6M4nQRRvrgf3W91GNq6JzwsGIZ_IcBLpo", "PUBLIC_SUPABASE_URL": "https://fzhpazheyemdmrtzdckl.supabase.co", "SITE": "https://beauty-house-marijana.vercel.app", "SSR": true};
 const ACTION_QUERY_PARAMS = ACTION_QUERY_PARAMS$1;
 const codeToStatusMap = {
   // Implemented from IANA HTTP Status Code Registry

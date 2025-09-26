@@ -13,7 +13,11 @@ const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables');
+  console.error('Missing Supabase environment variables:', {
+    url: !!supabaseUrl,
+    key: !!supabaseKey
+  });
+  throw new Error('Missing Supabase environment variables. Please check your Vercel environment configuration.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
