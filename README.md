@@ -1,6 +1,6 @@
 # Beauty House by Marijana Talović — Astro + React + Tailwind
 
-Minimalan, brz i responzivan web za frizerski salon sa Zoyya online rezervacijama i AI modulom za prijedlog slobodnih termina.
+Minimalan, brz i responzivan web za frizerski salon s vlastitim sustavom online rezervacija.
 
 ## 🚀 Pokretanje
 
@@ -11,32 +11,29 @@ npm run dev
 
 > Port je 4321 (možeš promijeniti u `astro.config.mjs`).
 
-## 🔗 Zoyya embed (Booking widget)
+## 📅 Booking sustav
 
-1. Od Zoyye preuzmi **embed URL** (iframe/script).
-2. U `.env` datoteci postavi:
-   ```env
-   PUBLIC_ZOYYA_WIDGET_URL="https://tvoj-zoyya-widget-url"
-   ```
-3. Komponenta `src/components/BookingWidget.jsx` čita varijablu i renderira responsive `iframe`.
+Vlastiti 5-step booking sistem:
+1. **Odabir usluge** - lista usluga s cijenama
+2. **Odabir djelatnika** - 6 djelatnika s avatarima  
+3. **Datum i vrijeme** - kalendar s dostupnim terminima
+4. **Podaci kupca** - ime, email, telefon, napomena
+5. **Potvrda** - sažetak rezervacije
 
-> Ako Zoyya podržava URL parametre za *pre-filled* datum/vrijeme, `SmartSuggestions` će otvoriti `?date=YYYY-MM-DD&time=HH:mm`. Inače, klik samo scrolla na widget.
+### API rute:
+- `/api/services` - dohvaćanje usluga
+- `/api/staff` - dohvaćanje djelatnika
+- `/api/availability` - provjera dostupnih termina
+- `/api/book` - kreiranje rezervacije
 
-## 🤖 AI modul — SmartSuggestions
-
-Komponenta `src/components/SmartSuggestions.jsx`:
-- Ulazi (UI): usluga (trajanje), preferirano doba dana (jutro/popodne/večer), raspon datuma (danas / sutra / ovaj tjedan / sljedeći tjedan).
-- Logika: generira slotove unutar radnog vremena, uklanja zauzete (*mock*), rangira po:
-  1) najraniji slobodan,
-  2) minimalni “razbijeni” gap,
-  3) poklapanje s preferencijama.
-- Izlaz: 3–5 čipova s prijedlozima. Klik → skrol na widget i (ako podržano) otvaranje Zoyya URL-a s parametrima.
-
-> **Integracija s pravim kalendarom:** Ako Zoyya nudi API (ili iCal feed), zamijeni `busySlotsMock` u `SmartSuggestions.jsx` stvarnim podacima i/ili fetchom.
+### Baza podataka:
+- Supabase integracija za pohranu podataka
+- Mock podaci za djelatnike
+- Validacija s Zod schemama
 
 ## 🔐 Security / CSP
 
-U `BaseLayout.astro` postoji **Content-Security-Policy**. Po potrebi dodaj domene koje Zoyya koristi (npr. `frame-src https://*.zoyya.com https://*.zoyya.net`). Ako ugrađuješ skripte drugih dobavljača (Analytics, itd.), proširi `script-src`, `connect-src` i dr.
+U `BaseLayout.astro` postoji **Content-Security-Policy** za sigurnost.
 
 ## 🧭 SEO & OG
 
@@ -71,7 +68,7 @@ public/
 ## 🗂️ Build & Deploy (Vercel)
 
 - Repo push na GitHub, poveži projekt na Vercel.
-- Dodaj **Environment Variable** `PUBLIC_ZOYYA_WIDGET_URL` i *Site URL* u `astro.config.mjs`.
+- Dodaj **Environment Variables** za Supabase u Vercel dashboard.
 - `vercel.json` nije potreban; Astro radi out-of-the-box.
 
 Sretno! ✂️💙

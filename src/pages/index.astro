@@ -8,8 +8,6 @@ import About from "../components/About.astro";
 import Team from "../components/Team.astro";
 
 
-import SmartSuggestions from "../components/SmartSuggestions.jsx";
-import BookingWidget from "../components/BookingWidget.jsx";
 
 const services = [
   { name: "Šišanje", description: "Pranje, šišanje i styling.", duration: 45, price: 25 },
@@ -32,7 +30,7 @@ const address = "Ulica Jela 79, Osijek";
 const phoneDisplay = "031 280 678";
 const phoneLink = "+38531280678";
 const email = "info@beautyhouse.hr";
-const hours = ["Pon–Pet 08–20", "Sub 08–14", "Ned zatvoreno"];
+const hours: string[] = ["Pon–Pet 08–20", "Sub 08–14", "Ned zatvoreno"];
 ---
 <BaseLayout>
   <Header />
@@ -82,7 +80,7 @@ const hours = ["Pon–Pet 08–20", "Sub 08–14", "Ned zatvoreno"];
             </li>
             <li>
               <strong>Radno vrijeme:</strong>
-              <span class="ml-2">{hours.join(" • ")}</span>
+              <span class="ml-2">{hours[0]} • {hours[1]} • {hours[2]}</span>
             </li>
           </ul>
 
@@ -102,19 +100,17 @@ const hours = ["Pon–Pet 08–20", "Sub 08–14", "Ned zatvoreno"];
       </div>
     </section>
 
-    <!-- REZERVACIJE (AI + ZOYYA) -->
+    <!-- REZERVACIJE -->
     <section id="rezervacije" aria-labelledby="rez-title" class="container-wide py-16">
       <h2 id="rez-title" class="section-title">Rezervacije</h2>
       <p class="muted mt-2">
-        Prvo pogledaj naše prijedloge termina, zatim potvrdi u Zoyya widgetu.
+        Odaberite uslugu, djelatnika, datum i vrijeme te unesite vaše podatke.
       </p>
 
       <div class="mt-6">
-        <SmartSuggestions client:load />
-      </div>
-
-      <div class="mt-6">
-        <BookingWidget client:only="react" />
+        <a href="/rezervacije" class="btn-primary" aria-label="Idi na rezervacije">
+          Rezerviraj termin
+        </a>
       </div>
     </section>
   </main>

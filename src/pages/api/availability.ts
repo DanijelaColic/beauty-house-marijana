@@ -32,7 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const { serviceId, date } = validationResult.data;
+    const { serviceId, staffId, date } = validationResult.data;
 
     // 3. Get service details
     const service = await db.getServiceById(serviceId);

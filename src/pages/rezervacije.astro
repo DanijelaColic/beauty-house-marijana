@@ -9,60 +9,10 @@ import { BookingForm } from "../components/booking/BookingForm";
   <Header />
 
   <main class="min-h-screen bg-background">
-    <div class="container-wide py-16">
-      <!-- Header -->
-      <div class="text-center mb-12">
-        <h1 class="section-title mb-4">
-          Rezerviraj termin
-        </h1>
-        <p class="text-lg text-textSecondary max-w-2xl mx-auto">
-          Odaberite uslugu, datum i vrijeme koje vam najbolje odgovara. 
-          Potvrdimo će vam rezervaciju putem emaila.
-        </p>
-      </div>
-
-      <!-- Booking Form -->
-      <div class="max-w-4xl mx-auto">
+    <div class="container-wide py-8">
+      <!-- Booking Form - No header, direct to booking -->
+      <div id="booking-root" class="w-full">
         <BookingForm client:load />
-      </div>
-
-      <!-- Info Section -->
-      <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        <div class="card p-6 text-center">
-          <div class="text-3xl mb-3">📅</div>
-          <h3 class="font-semibold text-textPrimary mb-2">Fleksibilno rezerviranje</h3>
-          <p class="text-textSecondary text-sm">
-            Rezervirajte termin do 30 dana unaprijed
-          </p>
-        </div>
-        
-        <div class="card p-6 text-center">
-          <div class="text-3xl mb-3">📧</div>
-          <h3 class="font-semibold text-textPrimary mb-2">Email potvrda</h3>
-          <p class="text-textSecondary text-sm">
-            Dobit ćete potvrdu rezervacije na email
-          </p>
-        </div>
-        
-        <div class="card p-6 text-center">
-          <div class="text-3xl mb-3">🔄</div>
-          <h3 class="font-semibold text-textPrimary mb-2">Možete otkazati</h3>
-          <p class="text-textSecondary text-sm">
-            Besplatno otkazivanje do 24h prije termina
-          </p>
-        </div>
-      </div>
-
-      <!-- Contact Info -->
-      <div class="mt-16 text-center">
-        <div class="card p-6 max-w-md mx-auto">
-          <h3 class="font-semibold text-textPrimary mb-4">Trebate pomoć?</h3>
-          <div class="space-y-2 text-textSecondary">
-            <p>📞 +385 31 280 678</p>
-            <p>📧 info@beautyhouse.hr</p>
-            <p class="text-sm">Pon-Pet: 08:00-20:00, Sub: 08:00-14:00</p>
-          </div>
-        </div>
       </div>
     </div>
   </main>

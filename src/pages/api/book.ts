@@ -53,6 +53,7 @@ export const POST: APIRoute = async ({ request }) => {
     // 4. Create booking
     const booking = await db.createBooking({
       serviceId: data.serviceId,
+      staffId: data.staffId,
       clientName: data.clientName,
       clientEmail: data.clientEmail,
       clientPhone: data.clientPhone,

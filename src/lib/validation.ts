@@ -77,11 +77,13 @@ export const bookingFormSchema = z.object({
 
 export const availabilityRequestSchema = z.object({
   serviceId: z.union([z.string(), z.number()]).transform(String),
+  staffId: z.union([z.string(), z.number()]).transform(String).optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Nevaljan format datuma'),
 });
 
 export const bookingCreateRequestSchema = z.object({
   serviceId: z.union([z.string(), z.number()]).transform(String),
+  staffId: z.union([z.string(), z.number()]).transform(String).optional(),
   clientName: nameSchema,
   clientEmail: emailSchema,
   clientPhone: phoneSchema,
