@@ -4,7 +4,6 @@ import { bookingCreateRequestSchema } from '@/lib/validation';
 import { db } from '@/lib/supabase';
 import { sendBookingConfirmation, sendAdminNotification } from '@/lib/email';
 
-export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
   try {

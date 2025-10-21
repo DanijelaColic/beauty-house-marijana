@@ -2,7 +2,6 @@
 import type { APIRoute } from 'astro';
 import { mockStaff } from '@/lib/mock-staff';
 
-export const prerender = false;
 
 export const GET: APIRoute = async () => {
   try {

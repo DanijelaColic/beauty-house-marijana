@@ -3,7 +3,6 @@ import type { APIRoute } from 'astro';
 import { availabilityRequestSchema } from '@/lib/validation';
 import { db } from '@/lib/supabase';
 
-export const prerender = false;
 import { SlotCalculator, getDefaultBusinessHours } from '@/lib/slots';
 import { parseISO, format } from 'date-fns';
 

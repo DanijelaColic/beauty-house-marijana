@@ -6,11 +6,6 @@ import react from "@astrojs/react";
 
 export default defineConfig({
   site: "https://beauty-house-marijana.vercel.app",
-  output: "server",
-  adapter: vercel({
-    webAnalytics: {
-      enabled: true,
-    },
-  }),
+  output: "static",
   integrations: [react(), tailwind(), sitemap()],
 });

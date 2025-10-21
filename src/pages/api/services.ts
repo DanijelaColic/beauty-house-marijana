@@ -2,7 +2,6 @@
 import type { APIRoute } from 'astro';
 import { db } from '@/lib/supabase';
 
-export const prerender = false;
 
 export const GET: APIRoute = async () => {
   try {
