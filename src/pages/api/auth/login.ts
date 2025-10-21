@@ -2,6 +2,8 @@ import type { APIRoute } from "astro";
 import { supabase as dbClient } from "@/lib/supabase";
 import { createClient } from "@supabase/supabase-js";
 
+export const prerender = false;
+
 const url = import.meta.env.PUBLIC_SUPABASE_URL!;
 const anon = import.meta.env.PUBLIC_SUPABASE_ANON_KEY!;
 const authClient = createClient(url, anon); // bez db.schema

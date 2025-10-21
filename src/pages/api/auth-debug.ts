@@ -2,6 +2,8 @@
 import type { APIRoute } from "astro";
 import { createServerClient } from "@supabase/ssr";
 
+export const prerender = false;
+
 export const GET: APIRoute = async ({ cookies, request }) => {
   // Možeš koristiti i process.env.SUPABASE_URL / SUPABASE_ANON_KEY ako želiš strictly server env
   const supabase = createServerClient(

@@ -2,6 +2,8 @@ import type { APIRoute } from 'astro';
 import { db } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth';
 
+export const prerender = false;
+
 export const GET: APIRoute = async ({ request }) => {
   try {
     // Check if user is authenticated staff

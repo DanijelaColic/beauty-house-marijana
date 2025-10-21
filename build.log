@@ -1,0 +1,21 @@
+
+> beauty-house-marijana@1.0.0 build
+> astro build
+
+22:33:05 [content] Syncing content
+22:33:05 [content] Synced content
+22:33:05 [types] Generated 69ms
+22:33:05 [build] output: "server"
+22:33:05 [build] mode: "server"
+22:33:05 [build] directory: /home/orisnik/projects/beauty-house-marijana/dist/
+22:33:05 [build] adapter: @astrojs/vercel
+22:33:05 [build] Collecting build info...
+22:33:05 [build] ✓ Completed in 184ms.
+22:33:05 [build] Building server entrypoints...
+22:32:53 [WARN] [vite] "isSameDay" is imported from external module "date-fns" but never used in "src/lib/validation.ts", "src/lib/slots.ts", "src/pages/api/availability.ts" and "src/components/admin/BookingsList.tsx".
+22:32:53 [WARN] [vite] "utcToZonedTime" is imported from external module "date-fns-tz" but never used in "src/lib/validation.ts" and "src/lib/slots.ts".
+22:32:54 [vite] ✓ built in -11236ms
+22:32:54 [build] ✓ Completed in 7.49s.
+
+ building client (vite) 
+22:32:54 [vite] transforming...
