@@ -1,0 +1,21 @@
+---
+---
+<html lang="hr">
+  <head><meta charset="utf-8" /><title>Login Debug</title></head>
+  <body style="font-family:sans-serif; max-width:520px; margin:2rem auto;">
+    <h1>Login Debug</h1>
+    <form id="f" style="display:grid; gap:.5rem;">
+      <label>Email
+        <input id="email" type="email" value="admin@beautyhouse.com" required />
+      </label>
+      <label>Lozinka
+        <input id="pw" type="password" value="Admin123!" required />
+      </label>
+      <button type="submit" style="justify-self:end;">Prijava</button>
+      <pre id="out"></pre>
+    </form>
+
+    <!-- VAŽNO: eksterni modul, bez inline JS-a -->
+    <script type="module" src="/src/scripts/login-debug.ts"></script>
+  </body>
+</html>

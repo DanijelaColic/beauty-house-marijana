@@ -1,4 +1,4 @@
-import { d as db } from '../../chunks/supabase_lS9oiJyB.mjs';
+import { d as db } from '../../chunks/supabase_Cjh8S1vc.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;
@@ -19,10 +19,15 @@ const GET = async () => {
     );
   } catch (error) {
     console.error("Error fetching services:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Greška pri dohvaćanju usluga"
+        error: "Greška pri dohvaćanju usluga",
+        details: process.env.NODE_ENV === "development" ? error.message : void 0
       }),
       {
         status: 500,

@@ -1,5 +1,5 @@
-import { a as availabilityRequestSchema } from '../../chunks/validation_DlZn1w71.mjs';
-import { d as db } from '../../chunks/supabase_lS9oiJyB.mjs';
+import { a as availabilityRequestSchema } from '../../chunks/validation_DHH0EK0s.mjs';
+import { d as db } from '../../chunks/supabase_Cjh8S1vc.mjs';
 import { addMinutes, isWithinInterval, parseISO } from 'date-fns';
 import { zonedTimeToUtc } from 'date-fns-tz';
 export { renderers } from '../../renderers.mjs';
@@ -236,7 +236,7 @@ const POST = async ({ request }) => {
         }
       );
     }
-    const { serviceId, date } = validationResult.data;
+    const { serviceId, staffId, date } = validationResult.data;
     const service = await db.getServiceById(serviceId);
     if (!service) {
       return new Response(
@@ -286,10 +286,15 @@ const POST = async ({ request }) => {
     );
   } catch (error) {
     console.error("Error checking availability:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Greška pri provjeri dostupnosti"
+        error: "Greška pri provjeri dostupnosti",
+        details: process.env.NODE_ENV === "development" ? error.message : void 0
       }),
       {
         status: 500,

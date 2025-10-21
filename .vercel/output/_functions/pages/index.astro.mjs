@@ -1,9 +1,9 @@
 /* empty css                                 */
-import { e as createComponent, m as maybeRenderHead, r as renderTemplate, h as addAttribute, k as renderComponent } from '../chunks/astro/server_DFoPc-bF.mjs';
+import { e as createComponent, m as maybeRenderHead, r as renderTemplate, h as addAttribute, k as renderComponent } from '../chunks/astro/server_BpigWmc2.mjs';
 import 'kleur/colors';
-import { b as $$BaseLayout, $ as $$Header, a as $$Footer } from '../chunks/Footer_DuojWUfv.mjs';
+import { $ as $$BaseLayout } from '../chunks/BaseLayout_P_euJCoa.mjs';
+import { $ as $$Header, a as $$Footer } from '../chunks/Footer_Duua4RXW.mjs';
 import 'clsx';
-import { useState, useMemo } from 'react';
 export { renderers } from '../renderers.mjs';
 
 const $$Hero = createComponent(($$result, $$props, $$slots) => {
@@ -56,71 +56,17 @@ Naš tim
 </h2> <div class="mt-2 h-1 w-16 bg-gold rounded-full mx-auto"></div> </header> <!-- Grid fotki --> <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6"> ${team.map((m) => renderTemplate`<figure class="text-center"> <div class="overflow-hidden rounded-full aspect-square mx-auto shadow"> <img${addAttribute(m.src, "src")}${addAttribute(m.name, "alt")} class="w-full h-full object-cover" loading="lazy"> </div> <figcaption class="mt-2 text-sm sm:text-base text-textSecondary font-medium"> ${m.name} </figcaption> </figure>`)} </div> </div> </section>`;
 }, "/home/orisnik/projects/beauty-house-marijana/src/components/Team.astro", void 0);
 
-const SERVICES = [
-  { id: "cut", name: "Šišanje", duration: 45 },
-  { id: "color", name: "Bojanje", duration: 90 },
-  { id: "style", name: "Styling", duration: 30 }
-];
-const WORK_HOURS = { Mon: [8, 20], Tue: [8, 20], Wed: [8, 20], Thu: [8, 20], Fri: [8, 20], Sat: [8, 14], Sun: null };
-const busySlotsMock = ["2025-09-09T10:00", "2025-09-09T12:00", "2025-09-10T09:00", "2025-09-11T16:00"];
-const fmt = (d) => new Date(d).toLocaleString("hr-HR", { dateStyle: "medium", timeStyle: "short" });
-const dayKey = (d) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(d).getDay()];
-function* gen(start, end, dur) {
-  for (let i = new Date(start); i <= end; i = new Date(i.getTime() + 15 * 6e4)) {
-    const wh = WORK_HOURS[dayKey(i)];
-    if (!wh) continue;
-    const h = i.getHours() + i.getMinutes() / 60;
-    if (h < wh[0] || h + dur / 60 > wh[1]) continue;
-    yield new Date(i);
-  }
-}
-function overlaps(s, dur, busy) {
-  const S = s.getTime(), E = S + dur * 6e4;
-  return busy.some((iso) => {
-    const bs = new Date(iso).getTime(), be = bs + 60 * 6e4;
-    return Math.max(S, bs) < Math.min(E, be);
-  });
-}
-function SmartSuggestions() {
-  const [serviceId, setServiceId] = useState(SERVICES[0].id);
-  const [range, setRange] = useState("today");
-  const duration = SERVICES.find((s) => s.id === serviceId)?.duration ?? 45;
-  const slots = useMemo(() => {
-    const now = /* @__PURE__ */ new Date();
-    let start = /* @__PURE__ */ new Date(), end = /* @__PURE__ */ new Date();
-    if (range === "today") {
-      end.setHours(23, 59, 59, 999);
-    } else if (range === "tomorrow") {
-      start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0);
-      end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 23, 59);
-    } else {
-      end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7, 23, 59);
-    }
-    const out = [];
-    for (const s of gen(start, end, duration)) {
-      if (s < now) continue;
-      if (overlaps(s, duration, busySlotsMock)) continue;
-      out.push(s);
-    }
-    return out.slice(0, 5);
-  }, [serviceId, range, duration]);
-  function onPick(s) {
-    s.getFullYear(); String(s.getMonth() + 1).padStart(2, "0"); String(s.getDate()).padStart(2, "0");
-    s.toTimeString().slice(0, 5);
-    window.location.hash = "#rezervacije";
-  }
-  return /* @__PURE__ */ React.createElement("div", { className: "card p-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-3 md:items-end" }, /* @__PURE__ */ React.createElement("label", { className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600" }, "Usluga"), /* @__PURE__ */ React.createElement("select", { value: serviceId, onChange: (e) => setServiceId(e.target.value), className: "select select-bordered rounded-xl" }, SERVICES.map((s) => /* @__PURE__ */ React.createElement("option", { key: s.id, value: s.id }, s.name, " — ", s.duration, " min")))), /* @__PURE__ */ React.createElement("label", { className: "flex flex-col gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600" }, "Raspon"), /* @__PURE__ */ React.createElement("select", { value: range, onChange: (e) => setRange(e.target.value), className: "select select-bordered rounded-xl" }, /* @__PURE__ */ React.createElement("option", { value: "today" }, "Danas"), /* @__PURE__ */ React.createElement("option", { value: "tomorrow" }, "Sutra"), /* @__PURE__ */ React.createElement("option", { value: "week" }, "Ovaj tjedan")))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap gap-2" }, slots.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, "Nema dostupnih termina."), slots.map((s, i) => /* @__PURE__ */ React.createElement("button", { key: i, className: "px-4 py-2 rounded-xl border border-slate-300 hover:border-[#2563EB] hover:text-[#2563EB] transition", onClick: () => onPick(s) }, fmt(s)))));
-}
-
 const $$Index = createComponent(($$result, $$props, $$slots) => {
   const address = "Ulica Jela 79, Osijek";
   const phoneDisplay = "031 280 678";
   const phoneLink = "+38531280678";
   const email = "info@beautyhouse.hr";
   const hours = ["Pon\u2013Pet 08\u201320", "Sub 08\u201314", "Ned zatvoreno"];
-  return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, {}, { "default": ($$result2) => renderTemplate` ${renderComponent($$result2, "Header", $$Header, {})} ${maybeRenderHead()}<main id="sadrzaj"> <!-- HERO --> ${renderComponent($$result2, "Hero", $$Hero, {})} <!-- USLUGE --> <section id="usluge" aria-labelledby="usluge-title" class="container-wide py-16"> <div class="flex items-baseline justify-between gap-4"> <h2 id="usluge-title" class="section-title">Usluge</h2> </div> ${renderComponent($$result2, "Services", $$Services, {})} ${renderComponent($$result2, "About", $$About, {})} ${renderComponent($$result2, "Team", $$Team, {})} <!-- LOKACIJA & KONTAKT --> <section id="kontakt" aria-labelledby="kontakt-title" class="container-wide py-16"> <h2 id="kontakt-title" class="section-title">Lokacija &amp; kontakt</h2> <div class="grid md:grid-cols-2 gap-8 mt-8 items-start"> <div class="card p-6"> <ul class="space-y-3"> <li> <strong>Adresa:</strong> <a class="ml-2" href="https://maps.google.com/?q=Ulica+Jela+79,+Osijek" target="_blank" rel="noopener" aria-label="Otvori lokaciju na Google kartama"> ${address} </a> </li> <li> <strong>Telefon:</strong> <a class="ml-2"${addAttribute("tel:" + phoneLink, "href")}>${phoneDisplay}</a> </li> <li> <strong>E-mail:</strong> <a class="ml-2"${addAttribute("mailto:" + email, "href")}>${email}</a> </li> <li> <strong>Radno vrijeme:</strong> <span class="ml-2">${hours.join(" \u2022 ")}</span> </li> </ul> <div class="flex gap-3 mt-6"> <a href="#rezervacije" class="btn-primary" aria-label="Idi na rezervacije">Rezerviraj termin</a> <a href="#usluge" class="btn-secondary" aria-label="Pogledaj sve usluge">Pogledaj usluge</a> </div> </div> <iframe class="w-full h-72 card p-0 overflow-hidden" src="https://www.google.com/maps?q=Ulica%20Jela%2079%2C%20Osijek&output=embed" title="Google Maps — Ulica Jela 79, Osijek" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe> </div> </section> <!-- REZERVACIJE (AI + ZOYYA) --> <section id="rezervacije" aria-labelledby="rez-title" class="container-wide py-16"> <h2 id="rez-title" class="section-title">Rezervacije</h2> <p class="muted mt-2">
-Prvo pogledaj naše prijedloge termina, zatim potvrdi u Zoyya widgetu.
-</p> <div class="mt-6"> ${renderComponent($$result2, "SmartSuggestions", SmartSuggestions, { "client:load": true, "client:component-hydration": "load", "client:component-path": "/home/orisnik/projects/beauty-house-marijana/src/components/SmartSuggestions.jsx", "client:component-export": "default" })} </div> <div class="mt-6"> ${renderComponent($$result2, "BookingWidget", null, { "client:only": "react", "client:component-hydration": "only", "client:component-path": "/home/orisnik/projects/beauty-house-marijana/src/components/BookingWidget.jsx", "client:component-export": "default" })} </div> </section> </section></main> ${renderComponent($$result2, "Footer", $$Footer, {})} ` })}`;
+  return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, {}, { "default": ($$result2) => renderTemplate` ${renderComponent($$result2, "Header", $$Header, {})} ${maybeRenderHead()}<main id="sadrzaj"> <!-- HERO --> ${renderComponent($$result2, "Hero", $$Hero, {})} <!-- USLUGE --> <section id="usluge" aria-labelledby="usluge-title" class="container-wide py-16"> <div class="flex items-baseline justify-between gap-4"> <h2 id="usluge-title" class="section-title">Usluge</h2> </div> ${renderComponent($$result2, "Services", $$Services, {})} ${renderComponent($$result2, "About", $$About, {})} ${renderComponent($$result2, "Team", $$Team, {})} <!-- LOKACIJA & KONTAKT --> <section id="kontakt" aria-labelledby="kontakt-title" class="container-wide py-16"> <h2 id="kontakt-title" class="section-title">Lokacija &amp; kontakt</h2> <div class="grid md:grid-cols-2 gap-8 mt-8 items-start"> <div class="card p-6"> <ul class="space-y-3"> <li> <strong>Adresa:</strong> <a class="ml-2" href="https://maps.google.com/?q=Ulica+Jela+79,+Osijek" target="_blank" rel="noopener" aria-label="Otvori lokaciju na Google kartama"> ${address} </a> </li> <li> <strong>Telefon:</strong> <a class="ml-2"${addAttribute("tel:" + phoneLink, "href")}>${phoneDisplay}</a> </li> <li> <strong>E-mail:</strong> <a class="ml-2"${addAttribute("mailto:" + email, "href")}>${email}</a> </li> <li> <strong>Radno vrijeme:</strong> <span class="ml-2">${hours[0]} • ${hours[1]} • ${hours[2]}</span> </li> </ul> <div class="flex gap-3 mt-6"> <a href="#rezervacije" class="btn-primary" aria-label="Idi na rezervacije">Rezerviraj termin</a> <a href="#usluge" class="btn-secondary" aria-label="Pogledaj sve usluge">Pogledaj usluge</a> </div> </div> <iframe class="w-full h-72 card p-0 overflow-hidden" src="https://www.google.com/maps?q=Ulica%20Jela%2079%2C%20Osijek&output=embed" title="Google Maps — Ulica Jela 79, Osijek" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe> </div> </section> <!-- REZERVACIJE --> <section id="rezervacije" aria-labelledby="rez-title" class="container-wide py-16"> <h2 id="rez-title" class="section-title">Rezervacije</h2> <p class="muted mt-2">
+Odaberite uslugu, djelatnika, datum i vrijeme te unesite vaše podatke.
+</p> <div class="mt-6"> <a href="/rezervacije" class="btn-primary" aria-label="Idi na rezervacije">
+Rezerviraj termin
+</a> </div> </section> </section></main> ${renderComponent($$result2, "Footer", $$Footer, {})} ` })}`;
 }, "/home/orisnik/projects/beauty-house-marijana/src/pages/index.astro", void 0);
 
 const $$file = "/home/orisnik/projects/beauty-house-marijana/src/pages/index.astro";

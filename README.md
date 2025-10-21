@@ -21,15 +21,38 @@ Vlastiti 5-step booking sistem:
 5. **Potvrda** - sažetak rezervacije
 
 ### API rute:
+
+**Javne rute (bez autentifikacije):**
 - `/api/services` - dohvaćanje usluga
 - `/api/staff` - dohvaćanje djelatnika
 - `/api/availability` - provjera dostupnih termina
-- `/api/book` - kreiranje rezervacije
+- `/api/book` - kreiranje rezervacije (guest booking)
+
+**Zaštićene rute (samo za osoblje):**
+- `/api/auth/login` - prijava osoblja
+- `/api/auth/logout` - odjava
+- `/api/auth/session` - provjera sesije
+- `/api/admin/bookings` - upravljanje rezervacijama
 
 ### Baza podataka:
 - Supabase integracija za pohranu podataka
+- Supabase Auth za autentifikaciju osoblja
+- Row Level Security (RLS) za sigurnost podataka
 - Mock podaci za djelatnike
 - Validacija s Zod schemama
+
+## 🔐 Autentifikacija osoblja
+
+Sistem podržava prijavu samo za osoblje (owner i staff uloge):
+
+- **Guest booking**: Kupci mogu rezervisati termine bez prijave
+- **Staff login**: Osoblje se prijavljuje na `/admin/login`
+- **Admin panel**: Pregled i upravljanje rezervacijama na `/admin`
+- **Uloge**:
+  - `owner` - Pun pristup svim funkcijama
+  - `staff` - Pristup rezervacijama
+
+**Setup uputstva**: Pogledaj `AUTH_SETUP.md` za detaljne upute.
 
 ## 🔐 Security / CSP
 
@@ -68,7 +91,20 @@ public/
 ## 🗂️ Build & Deploy (Vercel)
 
 - Repo push na GitHub, poveži projekt na Vercel.
-- Dodaj **Environment Variables** za Supabase u Vercel dashboard.
+- Dodaj **Environment Variables** za Supabase u Vercel dashboard:
+  - `PUBLIC_SUPABASE_URL`
+  - `PUBLIC_SUPABASE_ANON_KEY`
+  - (Opciono) `RESEND_API_KEY` za email notifikacije
 - `vercel.json` nije potreban; Astro radi out-of-the-box.
+
+## 📚 Dokumentacija
+
+- `AUTH_SETUP.md` - Detaljne upute za setup autentifikacije
+- `TEST_LOGIN_GUIDE.md` - Upute za testiranje prijave sa test korisnicima
+- `BOOKING_SETUP.md` - Upute za booking sistem
+- `VERCEL_ENV_SETUP.md` - Upute za Vercel environment varijable
+- `supabase_setup.sql` - SQL shema za osnovnu bazu
+- `supabase_auth_setup.sql` - SQL shema za autentifikaciju
+- `test_users_setup.sql` - SQL za kreiranje test korisnika
 
 Sretno! ✂️💙

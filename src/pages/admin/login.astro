@@ -1,0 +1,33 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import LoginForm from '@/components/auth/LoginForm';
+
+// Redirect if already logged in
+const sessionCookie = Astro.cookies.get('staff_session');
+if (sessionCookie) {
+  // Check if session is valid by calling session API
+  try {
+    const sessionCheck = await fetch(`${Astro.url.origin}/api/auth/session`, {
+      headers: {
+        'Cookie': `staff_session=${sessionCookie.value}`,
+      },
+    });
+    
+    if (sessionCheck.ok) {
+      return Astro.redirect('/admin');
+    }
+  } catch (err) {
+    console.error('Session check error:', err);
+  }
+}
+---
+
+<BaseLayout
+  title="Prijava | Beauty House Marijana"
+  description="Prijava za osoblje Beauty House Marijana"
+>
+  <div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <LoginForm client:load />
+  </div>
+</BaseLayout>
+

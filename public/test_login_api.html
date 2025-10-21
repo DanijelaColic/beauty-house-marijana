@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login API</title>
+</head>
+<body>
+    <h1>Test Login API</h1>
+    
+    <div>
+        <h2>Test 1: Direktan API poziv</h2>
+        <button onclick="testDirectAPI()">Testiraj direktni API poziv</button>
+        <div id="directResult"></div>
+    </div>
+    
+    <div>
+        <h2>Test 2: Supabase direktno</h2>
+        <button onclick="testSupabaseDirect()">Testiraj Supabase direktno</button>
+        <div id="supabaseResult"></div>
+    </div>
+    
+    <div>
+        <h2>Test 3: Provjera environment varijabli</h2>
+        <button onclick="checkEnvironment()">Provjeri environment</button>
+        <div id="envResult"></div>
+    </div>
+
+    <script>
+        // Test 1: Direktan API poziv
+        async function testDirectAPI() {
+            const resultDiv = document.getElementById('directResult');
+            resultDiv.innerHTML = 'Testiranje...';
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@beautyhouse.com',
+                        password: 'Admin123!'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <h3>Rezultat:</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Response:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>Greška:</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        // Test 2: Supabase direktno
+        async function testSupabaseDirect() {
+            const resultDiv = document.getElementById('supabaseResult');
+            resultDiv.innerHTML = 'Testiranje...';
+            
+            try {
+                // Provjeri da li su environment varijable dostupne
+                const supabaseUrl = window.location.origin.includes('localhost') 
+                    ? 'http://localhost:4321' 
+                    : window.location.origin;
+                
+                resultDiv.innerHTML = `
+                    <h3>Environment Info:</h3>
+                    <p><strong>Current URL:</strong> ${window.location.href}</p>
+                    <p><strong>Supabase URL:</strong> ${supabaseUrl}</p>
+                    <p><strong>API Endpoint:</strong> ${supabaseUrl}/api/auth/login</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>Greška:</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        // Test 3: Provjera environment varijabli
+        function checkEnvironment() {
+            const resultDiv = document.getElementById('envResult');
+            
+            // Ovo neće raditi u browseru, ali možemo provjeriti neke stvari
+            resultDiv.innerHTML = `
+                <h3>Browser Environment:</h3>
+                <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+                <p><strong>Current URL:</strong> ${window.location.href}</p>
+                <p><strong>Protocol:</strong> ${window.location.protocol}</p>
+                <p><strong>Host:</strong> ${window.location.host}</p>
+                <p><strong>Origin:</strong> ${window.location.origin}</p>
+            `;
+        }
+    </script>
+</body>
+</html>

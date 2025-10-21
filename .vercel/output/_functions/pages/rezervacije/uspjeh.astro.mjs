@@ -1,7 +1,8 @@
 /* empty css                                    */
-import { e as createComponent, f as createAstro, k as renderComponent, l as renderScript, r as renderTemplate, m as maybeRenderHead } from '../../chunks/astro/server_DFoPc-bF.mjs';
+import { e as createComponent, f as createAstro, k as renderComponent, n as renderScript, r as renderTemplate, m as maybeRenderHead } from '../../chunks/astro/server_BpigWmc2.mjs';
 import 'kleur/colors';
-import { $ as $$Header, a as $$Footer, b as $$BaseLayout } from '../../chunks/Footer_DuojWUfv.mjs';
+import { $ as $$BaseLayout } from '../../chunks/BaseLayout_P_euJCoa.mjs';
+import { $ as $$Header, a as $$Footer } from '../../chunks/Footer_Duua4RXW.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const $$Astro = createAstro();

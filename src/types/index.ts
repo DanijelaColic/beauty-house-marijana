@@ -2,6 +2,10 @@
 
 export type DatabaseProvider = 'supabase';
 
+// Staff roles for authentication
+export type StaffRole = 'owner' | 'staff';
+
+// Legacy user roles (deprecated)
 export type UserRole = 'ADMIN' | 'CLIENT';
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'NO_SHOW';
 
@@ -118,4 +122,33 @@ export interface ServicesResponse {
   success: boolean;
   data?: Service[];
   error?: string;
+}
+
+// ============================================
+// AUTH TYPES
+// ============================================
+
+export interface StaffProfile {
+  id: string;
+  email: string;
+  fullName?: string;
+  role: StaffRole;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AuthSession {
+  user: {
+    id: string;
+    email: string;
+  };
+  profile: StaffProfile;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  data?: AuthSession;
+  error?: string;
+  message?: string;
 }

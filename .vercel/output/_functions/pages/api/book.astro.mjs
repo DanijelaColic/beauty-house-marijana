@@ -1,10 +1,15 @@
-import { b as bookingCreateRequestSchema } from '../../chunks/validation_DlZn1w71.mjs';
-import { d as db } from '../../chunks/supabase_lS9oiJyB.mjs';
+import { b as bookingCreateRequestSchema } from '../../chunks/validation_DHH0EK0s.mjs';
+import { d as db } from '../../chunks/supabase_Cjh8S1vc.mjs';
 import { Resend } from 'resend';
 export { renderers } from '../../renderers.mjs';
 
-const resend = new Resend("re_WwwsEZXF_7TrwPYHTWNRBJ1LoMRwWYqZ5");
+const resendApiKey = "re_WwwsEZXF_7TrwPYHTWNRBJ1LoMRwWYqZ5";
+const resend = new Resend(resendApiKey) ;
 async function sendBookingConfirmation(data) {
+  if (!resend) {
+    console.warn("Resend not configured, skipping email send");
+    return true;
+  }
   try {
     const { error } = await resend.emails.send({
       from: "Beauty House by Marijana Talović <onboarding@resend.dev>",
@@ -24,6 +29,10 @@ async function sendBookingConfirmation(data) {
   }
 }
 async function sendAdminNotification(data) {
+  if (!resend) {
+    console.warn("Resend not configured, skipping admin notification");
+    return true;
+  }
   try {
     const { error } = await resend.emails.send({
       from: "Beauty House by Marijana Talović <onboarding@resend.dev>",
@@ -53,7 +62,7 @@ function generateBookingConfirmationHTML(data) {
       minute: "2-digit"
     });
   };
-  const cancelUrl = `${":https://beauty-house-marijana.vercel.app/"}/rezervacije/otkazi?token=${data.cancelToken}`;
+  const cancelUrl = `${"https://beauty-house-marijana.vercel.app/"}/rezervacije/otkazi?token=${data.cancelToken}`;
   return `
     <!DOCTYPE html>
     <html>
@@ -207,6 +216,7 @@ const POST = async ({ request }) => {
     }
     const booking = await db.createBooking({
       serviceId: data.serviceId,
+      staffId: data.staffId,
       clientName: data.clientName,
       clientEmail: data.clientEmail,
       clientPhone: data.clientPhone,
@@ -288,10 +298,15 @@ Napomena: ${data.notes}` : ""}`,
     );
   } catch (error) {
     console.error("Error creating booking:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Dogodila se greška pri kreiranju rezervacije"
+        error: "Dogodila se greška pri kreiranju rezervacije",
+        details: process.env.NODE_ENV === "development" ? error.message : void 0
       }),
       {
         status: 500,

@@ -20,7 +20,9 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables. Please check your Vercel environment configuration.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  db: { schema: "public" },  
+});
 
 // Database service interface
 export class SupabaseService {
