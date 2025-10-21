@@ -1,3 +1,5 @@
 {
-  "runtime": "edge"
+  "runtime": "nodejs20.x",
+  "handler": "index.js",
+  "launcherType": "Nodejs"
 }
