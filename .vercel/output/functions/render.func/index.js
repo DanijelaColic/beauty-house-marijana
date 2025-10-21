@@ -1,2 +1,2 @@
-// Vercel serverless function wrapper for Astro
+// Edge Runtime function for Astro
 export { default } from './entry.mjs';
