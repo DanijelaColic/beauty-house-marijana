@@ -10,17 +10,26 @@ if (!sessionCookie) {
   return Astro.redirect('/admin/login');
 }
 
-// Verify session
+// Verify session - pass all cookies from request
 try {
+  // Get all cookies from the request to pass to session API
+  const allCookies = Astro.request.headers.get('cookie') || '';
+  
   const sessionCheck = await fetch(`${Astro.url.origin}/api/auth/session`, {
     headers: {
-      'Cookie': `staff_session=${sessionCookie.value}`,
+      'Cookie': allCookies, // Pass all cookies including Supabase auth cookies
     },
   });
   
+  console.log('Session check result:', sessionCheck.status, sessionCheck.statusText);
+  
   if (!sessionCheck.ok) {
+    console.error('Session check failed, redirecting to login');
     return Astro.redirect('/admin/login');
   }
+  
+  const sessionData = await sessionCheck.json();
+  console.log('Session data:', sessionData.success ? 'Valid' : 'Invalid');
 } catch (err) {
   console.error('Session check error:', err);
   return Astro.redirect('/admin/login');

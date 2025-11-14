@@ -6,12 +6,32 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
+// Helper to get current path
+const getCurrentPath = () => {
+  if (typeof window !== 'undefined') {
+    return window.location.pathname;
+  }
+  return '/admin';
+};
+
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPath, setCurrentPath] = useState('/admin');
 
   useEffect(() => {
     checkSession();
+    setCurrentPath(getCurrentPath());
+    
+    // Update path on navigation
+    const handleLocationChange = () => {
+      setCurrentPath(getCurrentPath());
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+    };
   }, []);
 
   const checkSession = async () => {
@@ -92,30 +112,46 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex space-x-8">
             <a
               href="/admin"
-              className="border-b-2 border-rose-500 text-gray-900 inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium"
+              className={`border-b-2 inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium ${
+                currentPath === '/admin'
+                  ? 'border-rose-500 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              }`}
             >
               Rezervacije
             </a>
             {profile?.role === 'owner' && (
               <>
-                <a
-                  href="/admin/services"
-                  className="border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium"
-                >
-                  Usluge
-                </a>
-                <a
-                  href="/admin/staff"
-                  className="border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium"
-                >
-                  Osoblje
-                </a>
-                <a
-                  href="/admin/settings"
-                  className="border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium"
-                >
-                  Postavke
-                </a>
+            <a
+              href="/admin/services"
+              className={`border-b-2 inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium ${
+                currentPath === '/admin/services'
+                  ? 'border-rose-500 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              }`}
+            >
+              Usluge
+            </a>
+            <a
+              href="/admin/staff"
+              className={`border-b-2 inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium ${
+                currentPath === '/admin/staff'
+                  ? 'border-rose-500 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              }`}
+            >
+              Osoblje
+            </a>
+            <a
+              href="/admin/settings"
+              className={`border-b-2 inline-flex items-center px-1 pt-1 pb-4 text-sm font-medium ${
+                currentPath === '/admin/settings'
+                  ? 'border-rose-500 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              }`}
+            >
+              Postavke
+            </a>
               </>
             )}
           </div>

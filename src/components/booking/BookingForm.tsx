@@ -74,6 +74,18 @@ export function BookingForm({ onSuccess, onError }: BookingFormProps) {
     }
   }, []);
 
+  // Reload slots when returning to step 3 to ensure we have the latest data
+  useEffect(() => {
+    if (currentStep === 3 && bookingState.selectedService && bookingState.selectedStaff && bookingState.selectedDate) {
+      loadAvailableSlots(
+        bookingState.selectedService.id,
+        bookingState.selectedStaff.id,
+        bookingState.selectedDate
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, bookingState.selectedDate]);
+
   const loadInitialData = async () => {
     try {
       setLoading(true);
@@ -101,6 +113,7 @@ export function BookingForm({ onSuccess, onError }: BookingFormProps) {
   const loadAvailableSlots = async (serviceId: string, staffId: string, date: string) => {
     try {
       setLoading(true);
+      
       const response = await fetch('/api/availability', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -109,15 +122,20 @@ export function BookingForm({ onSuccess, onError }: BookingFormProps) {
 
       if (response.ok) {
         const data = await response.json();
+        const slots = data.data?.slots || [];
+        
         setBookingState(prev => ({
           ...prev,
-          availableSlots: data.data?.slots || [],
+          availableSlots: slots,
         }));
       } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to load available slots:', errorData);
         setError('Greška pri učitavanju dostupnih termina');
         setBookingState(prev => ({ ...prev, availableSlots: [] }));
       }
     } catch (err) {
+      console.error('Error loading available slots:', err);
       setError('Greška pri učitavanju dostupnih termina');
       setBookingState(prev => ({ ...prev, availableSlots: [] }));
     } finally {
@@ -157,11 +175,18 @@ export function BookingForm({ onSuccess, onError }: BookingFormProps) {
       setSubmitting(true);
       setError('');
 
-      const startAt = new Date(`${bookingState.selectedDate}T${bookingState.selectedTime}:00`).toISOString();
+      // Parse date and time correctly, ensuring we use local timezone
+      // selectedDate is in format 'YYYY-MM-DD', selectedTime is in format 'HH:mm'
+      const [year, month, day] = bookingState.selectedDate.split('-').map(Number);
+      const [hours, minutes] = bookingState.selectedTime.split(':').map(Number);
+      
+      // Create date in local timezone, then convert to ISO string
+      const localDateTime = new Date(year, month - 1, day, hours, minutes, 0);
+      const startAt = localDateTime.toISOString();
 
       const bookingData = {
         serviceId: bookingState.selectedService!.id,
-        staffId: bookingState.selectedStaff!.id,
+        staffId: bookingState.selectedStaff?.id || undefined, // Proslijedi staffId samo ako je odabran
         clientName: bookingState.clientName,
         clientEmail: bookingState.clientEmail,
         clientPhone: bookingState.clientPhone || undefined,
@@ -179,18 +204,35 @@ export function BookingForm({ onSuccess, onError }: BookingFormProps) {
 
       if (response.ok && result.success) {
         setBookingState(prev => ({ ...prev, bookingId: result.data.booking.id }));
+        
+        // Reload available slots for the selected date to reflect the new booking
+        // Wait a bit to ensure the booking is saved in the database
+        if (bookingState.selectedService && bookingState.selectedStaff && bookingState.selectedDate) {
+          // Use setTimeout to ensure booking is saved before reloading
+          // Increased delay to 1000ms to ensure database write is complete
+          setTimeout(() => {
+            loadAvailableSlots(
+              bookingState.selectedService!.id, 
+              bookingState.selectedStaff!.id, 
+              bookingState.selectedDate!
+            );
+          }, 1000);
+        }
+        
         setCurrentStep(5);
         if (onSuccess) {
           onSuccess(result.data.booking.id);
         }
       } else {
         const errorMessage = result.error || 'Greška pri kreiranju rezervacije';
+        console.error('Booking creation failed:', errorMessage);
         setError(errorMessage);
         if (onError) {
           onError(errorMessage);
         }
       }
     } catch (err) {
+      console.error('Exception in submitBooking:', err);
       const errorMessage = 'Greška pri kreiranju rezervacije';
       setError(errorMessage);
       if (onError) {
@@ -270,11 +312,27 @@ export function BookingForm({ onSuccess, onError }: BookingFormProps) {
                 <StaffStep
                   staff={staff}
                   selectedStaff={bookingState.selectedStaff}
+                  serviceId={bookingState.selectedService?.id || ''}
+                  loading={loading}
                   onStaffSelect={(staff) => {
                     setBookingState(prev => ({ ...prev, selectedStaff: staff }));
                     // Auto-advance to next step after state update
                     setTimeout(() => {
                       setCurrentStep(3);
+                      setError('');
+                    }, 100);
+                  }}
+                  onFirstAvailableFound={async (staff, date, time) => {
+                    // Automatically select staff, date, and time
+                    setBookingState(prev => ({ 
+                      ...prev, 
+                      selectedStaff: staff,
+                      selectedDate: date,
+                      selectedTime: time
+                    }));
+                    // Auto-advance to step 4 (customer info)
+                    setTimeout(() => {
+                      setCurrentStep(4);
                       setError('');
                     }, 100);
                   }}
@@ -288,15 +346,26 @@ export function BookingForm({ onSuccess, onError }: BookingFormProps) {
                   selectedTime={bookingState.selectedTime}
                   availableSlots={bookingState.availableSlots}
                   loading={loading}
-                  onDateSelect={(date) => {
+                  serviceId={bookingState.selectedService?.id || ''}
+                  staffId={bookingState.selectedStaff?.id || ''}
+                  onDateSelect={async (date) => {
                     setBookingState(prev => ({ ...prev, selectedDate: date, selectedTime: '' }));
                     if (bookingState.selectedService && bookingState.selectedStaff) {
-                      loadAvailableSlots(bookingState.selectedService.id, bookingState.selectedStaff.id, date);
+                      await loadAvailableSlots(bookingState.selectedService.id, bookingState.selectedStaff.id, date);
                     }
                   }}
                   onTimeSelect={(time) => {
                     setBookingState(prev => ({ ...prev, selectedTime: time }));
                     // Auto-advance to next step after state update
+                    setTimeout(() => {
+                      setCurrentStep(4);
+                      setError('');
+                    }, 100);
+                  }}
+                  onFirstAvailableFound={(date, time) => {
+                    // This callback is called after first available slot is found
+                    // The date is already selected, now select the time
+                    setBookingState(prev => ({ ...prev, selectedDate: date, selectedTime: time }));
                     setTimeout(() => {
                       setCurrentStep(4);
                       setError('');
@@ -485,15 +554,130 @@ function ServiceStep({ services, loading, selectedService, onServiceSelect }: Se
 interface StaffStepProps {
   staff: Staff[];
   selectedStaff: Staff | null;
+  serviceId: string;
+  loading: boolean;
   onStaffSelect: (staff: Staff) => void;
+  onFirstAvailableFound: (staff: Staff, date: string, time: string) => void;
 }
 
-function StaffStep({ staff, selectedStaff, onStaffSelect }: StaffStepProps) {
+function StaffStep({ staff, selectedStaff, serviceId, loading, onStaffSelect, onFirstAvailableFound }: StaffStepProps) {
+  const [findingFirstAvailable, setFindingFirstAvailable] = useState(false);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  const handleFindFirstAvailable = async () => {
+    if (!serviceId) {
+      setMessage({ text: 'Molimo odaberite uslugu prije traženja prvog slobodnog termina.', type: 'error' });
+      setTimeout(() => setMessage(null), 3000);
+      return;
+    }
+
+    try {
+      setFindingFirstAvailable(true);
+      setMessage(null);
+
+      const response = await fetch('/api/availability/first-available', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serviceId }), // No staffId - check all staff
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Find the staff member from the list
+          const foundStaff = staff.find(s => s.id === data.data.staffId);
+          
+          if (foundStaff) {
+            // Show success message
+            const [year, month, day] = data.data.date.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            const dateStr = date.toLocaleDateString('hr-HR', { 
+              weekday: 'long', 
+              day: 'numeric', 
+              month: 'long' 
+            });
+            setMessage({ 
+              text: `Pronađen prvi slobodan termin: ${data.data.staffName} - ${dateStr} u ${data.data.time}`, 
+              type: 'success' 
+            });
+            
+            // Automatically select staff, date, and time
+            setTimeout(() => {
+              onFirstAvailableFound(foundStaff, data.data.date, data.data.time);
+            }, 1000);
+          } else {
+            setMessage({ text: 'Djelatnik nije pronađen u listi.', type: 'error' });
+            setTimeout(() => setMessage(null), 5000);
+          }
+        } else {
+          setMessage({ text: data.error || 'Nema dostupnih termina', type: 'error' });
+          setTimeout(() => setMessage(null), 5000);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setMessage({ text: errorData.error || 'Greška pri pronalasku prvog slobodnog termina', type: 'error' });
+        setTimeout(() => setMessage(null), 5000);
+      }
+    } catch (err) {
+      console.error('Error finding first available slot:', err);
+      setMessage({ text: 'Greška pri pronalasku prvog slobodnog termina', type: 'error' });
+      setTimeout(() => setMessage(null), 5000);
+    } finally {
+      setFindingFirstAvailable(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       <h2 className="text-xl font-semibold mb-4">Odaberite djelatnika</h2>
+
+      {/* Message */}
+      {message && (
+        <div className={`mb-4 p-3 rounded-lg border ${
+          message.type === 'success' 
+            ? 'bg-green-50 border-green-200' 
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <p className={`text-sm text-center ${
+            message.type === 'success' ? 'text-green-700 font-medium' : 'text-red-600'
+          }`}>
+            {message.text}
+          </p>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto" style={{ maxHeight: '550px' }}>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Prvi slobodan termin - prikazuje se samo ako nije odabran djelatnik */}
+          {!selectedStaff && (
+            <button
+              onClick={handleFindFirstAvailable}
+              disabled={findingFirstAvailable || !serviceId || loading}
+              className={`p-4 text-center border rounded-lg transition-colors ${
+                findingFirstAvailable
+                  ? 'border-gray-300 bg-gray-50 cursor-wait'
+                  : 'border-green-200 hover:border-green-300 bg-green-50/50 hover:bg-green-50'
+              }`}
+            >
+              <div className="mb-3 flex items-center justify-center">
+                {findingFirstAvailable ? (
+                  <Loader2 className="w-16 h-16 text-gray-400 animate-spin" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full mx-auto bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-white" />
+                  </div>
+                )}
+              </div>
+              <h3 className="font-medium text-sm text-gray-800">
+                {findingFirstAvailable ? 'Tražim...' : 'Prvi slobodan termin'}
+              </h3>
+              <p className="text-xs text-gray-600 mt-1">
+                Automatski odabir
+              </p>
+            </button>
+          )}
+
+          {/* Djelatnici */}
           {staff.map((member) => (
             <button
               key={member.id}
@@ -529,8 +713,11 @@ interface DateTimeStepProps {
   selectedTime: string;
   availableSlots: TimeSlot[];
   loading: boolean;
-  onDateSelect: (date: string) => void;
+  serviceId: string;
+  staffId: string;
+  onDateSelect: (date: string) => Promise<void>;
   onTimeSelect: (time: string) => void;
+  onFirstAvailableFound: (date: string, time: string) => void;
 }
 
 function DateTimeStep({ 
@@ -538,11 +725,16 @@ function DateTimeStep({
   selectedTime, 
   availableSlots, 
   loading, 
+  serviceId,
+  staffId,
   onDateSelect, 
-  onTimeSelect 
+  onTimeSelect,
+  onFirstAvailableFound
 }: DateTimeStepProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [unavailableMessage, setUnavailableMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [findingFirstAvailable, setFindingFirstAvailable] = useState(false);
 
   // Generate calendar for current month
   const generateCalendar = () => {
@@ -606,7 +798,12 @@ function DateTimeStep({
   };
 
   const handleDateClick = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Format date in local timezone to avoid timezone issues
+    // Use local date components instead of ISO string
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
     
     if (!isDateAvailable(date)) {
       if (date.getDay() === 0) {
@@ -636,9 +833,85 @@ function DateTimeStep({
     }
   };
 
+  const handleFindFirstAvailable = async () => {
+    if (!serviceId || !staffId) {
+      setUnavailableMessage('Molimo odaberite uslugu i djelatnika prije traženja prvog slobodnog termina.');
+      setTimeout(() => setUnavailableMessage(''), 3000);
+      return;
+    }
+
+    try {
+      setFindingFirstAvailable(true);
+      setUnavailableMessage('');
+
+      const response = await fetch('/api/availability/first-available', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serviceId, staffId }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Show success message
+          const [year, month, day] = data.data.date.split('-').map(Number);
+          const date = new Date(year, month - 1, day);
+          const dateStr = date.toLocaleDateString('hr-HR', { 
+            weekday: 'long', 
+            day: 'numeric', 
+            month: 'long' 
+          });
+          setSuccessMessage(`Pronađen prvi slobodan termin: ${dateStr} u ${data.data.time}`);
+          setTimeout(() => setSuccessMessage(''), 3000);
+          
+          // Automatically select the first available date and wait for slots to load
+          await onDateSelect(data.data.date);
+          // Wait a bit for slots to load, then select the time and advance
+          setTimeout(() => {
+            onFirstAvailableFound(data.data.date, data.data.time);
+          }, 800);
+        } else {
+          setUnavailableMessage(data.error || 'Nema dostupnih termina');
+          setTimeout(() => setUnavailableMessage(''), 5000);
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setUnavailableMessage(errorData.error || 'Greška pri pronalasku prvog slobodnog termina');
+        setTimeout(() => setUnavailableMessage(''), 5000);
+      }
+    } catch (err) {
+      console.error('Error finding first available slot:', err);
+      setUnavailableMessage('Greška pri pronalasku prvog slobodnog termina');
+      setTimeout(() => setUnavailableMessage(''), 5000);
+    } finally {
+      setFindingFirstAvailable(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
-      <h2 className="text-xl font-semibold mb-4">Odaberite datum i vrijeme</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Odaberite datum i vrijeme</h2>
+        <Button
+          onClick={handleFindFirstAvailable}
+          disabled={findingFirstAvailable || !serviceId || !staffId}
+          variant="outline"
+          size="sm"
+          className="flex items-center space-x-2"
+        >
+          {findingFirstAvailable ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Tražim...</span>
+            </>
+          ) : (
+            <>
+              <CheckCircle className="w-4 h-4" />
+              <span>Prvi slobodan termin</span>
+            </>
+          )}
+        </Button>
+      </div>
       
       {/* Unified scroll container */}
       <div className="flex-1 overflow-y-auto" style={{ maxHeight: '550px' }}>
@@ -675,7 +948,11 @@ function DateTimeStep({
         {/* Calendar Grid */}
         <div className="grid grid-cols-7 gap-1 mb-4">
           {calendar.map((date, index) => {
-            const dateStr = date.toISOString().split('T')[0];
+            // Format date in local timezone to avoid timezone issues
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
             const isSelected = selectedDate === dateStr;
             const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
             const isAvailable = isDateAvailable(date);
@@ -723,6 +1000,13 @@ function DateTimeStep({
           })}
         </div>
 
+        {/* Success message */}
+        {successMessage && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-700 text-center font-medium">{successMessage}</p>
+          </div>
+        )}
+
         {/* Error message */}
         {unavailableMessage && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -734,11 +1018,15 @@ function DateTimeStep({
         {selectedDate && (
           <div className="border-t pt-3">
             <h3 className="text-sm font-medium mb-2 text-center bg-gradient-to-r from-green-100 to-teal-100 p-2 rounded-md">
-              Dostupni termini za {new Date(selectedDate + 'T00:00:00').toLocaleDateString('hr-HR', { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'long' 
-              })}
+              Dostupni termini za {selectedDate ? (() => {
+                const [year, month, day] = selectedDate.split('-').map(Number);
+                const date = new Date(year, month - 1, day);
+                return date.toLocaleDateString('hr-HR', { 
+                  weekday: 'long', 
+                  day: 'numeric', 
+                  month: 'long' 
+                });
+              })() : ''}
             </h3>
             
             {loading ? (
@@ -896,7 +1184,10 @@ function ConfirmationStep({ bookingState }: ConfirmationStepProps) {
           <div className="flex justify-between">
             <span className="text-gray-600">Datum:</span>
             <span className="font-medium">
-              {new Date(bookingState.selectedDate).toLocaleDateString('hr-HR')}
+              {bookingState.selectedDate ? (() => {
+                const [year, month, day] = bookingState.selectedDate.split('-').map(Number);
+                return new Date(year, month - 1, day).toLocaleDateString('hr-HR');
+              })() : ''}
             </span>
           </div>
           
@@ -979,10 +1270,13 @@ function SummaryPanel({ bookingState }: SummaryPanelProps) {
         {bookingState.selectedDate ? (
           <div>
             <div className="font-medium">
-              {new Date(bookingState.selectedDate).toLocaleDateString('hr-HR', {
-                day: 'numeric',
-                month: 'long',
-              })}
+              {bookingState.selectedDate ? (() => {
+                const [year, month, day] = bookingState.selectedDate.split('-').map(Number);
+                return new Date(year, month - 1, day).toLocaleDateString('hr-HR', {
+                  day: 'numeric',
+                  month: 'long',
+                });
+              })() : ''}
             </div>
             {bookingState.selectedTime && (
               <div className="text-gray-600">u {bookingState.selectedTime}</div>

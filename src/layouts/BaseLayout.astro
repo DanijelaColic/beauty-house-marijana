@@ -68,6 +68,7 @@ const jsonLd = {
     <link rel="icon" href="/favicon.png" />
 
     <!-- CSP: proširi domene po potrebi -->
+    <!-- frame-ancestors ne radi u meta tagu, stavi ga u HTTP header ako treba -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       base-uri 'self';
@@ -78,7 +79,6 @@ const jsonLd = {
       script-src 'self' 'unsafe-inline';
       connect-src 'self' https:;
       frame-src 'self' https://*.google.com https://www.google.com https://maps.google.com;
-      frame-ancestors 'self';
       form-action 'self';
       upgrade-insecure-requests;
     ">

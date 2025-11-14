@@ -1,0 +1,133 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+const currentDate = "30. 10. 2024.";
+---
+
+<BaseLayout 
+  title="Pravila privatnosti - Beauty House by Marijana Talović"
+  description="Pravila privatnosti i zaštite osobnih podataka za Beauty House by Marijana Talović frizerski salon u Osijeku."
+>
+  <Header />
+  
+  <main class="container-wide py-16">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl md:text-4xl font-bold text-textPrimary mb-8">
+        Pravila privatnosti
+      </h1>
+      
+      <div class="prose prose-slate max-w-none">
+        <p class="text-lg text-slate-600 mb-8">
+          Posljednje ažuriranje: {currentDate}
+        </p>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">1. Općenito</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Beauty House by Marijana Talović (u daljnjem tekstu "Salon") posvećen je zaštiti privatnosti svojih klijenata. 
+            Ova pravila privatnosti objašnjavaju kako prikupljamo, koristimo i štitimo vaše osobne podatke kada koristite 
+            naše usluge ili posjećujete našu web stranicu.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">2. Podaci koje prikupljamo</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">Prikupljamo sljedeće vrste podataka:</p>
+          <ul class="list-disc pl-6 text-slate-700 space-y-2">
+            <li><strong>Osobni podaci:</strong> ime, prezime, broj telefona, e-mail adresa</li>
+            <li><strong>Podaci o rezervaciji:</strong> datum i vrijeme termina, odabrane usluge</li>
+            <li><strong>Tehnički podaci:</strong> IP adresa, tip preglednika, podaci o posjetu web stranici</li>
+            <li><strong>Komunikacijski podaci:</strong> poruke i komunikacija s našim osobljem</li>
+          </ul>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">3. Svrha korištenja podataka</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">Vaše podatke koristimo za:</p>
+          <ul class="list-disc pl-6 text-slate-700 space-y-2">
+            <li>Rezervaciju i upravljanje terminima</li>
+            <li>Komunikaciju o vašim rezervacijama</li>
+            <li>Pružanje kvalitetnih usluga prilagođenih vašim potrebama</li>
+            <li>Poboljšanje naših usluga i korisničkog iskustva</li>
+            <li>Ispunjavanje zakonskih obveza</li>
+          </ul>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">4. Dijeljenje podataka</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Vaše osobne podatke ne prodajemo, ne iznajmljujemo niti ne dijelimo s trećim stranama, osim u sljedećim slučajevima:
+          </p>
+          <ul class="list-disc pl-6 text-slate-700 space-y-2">
+            <li>Kada je to potrebno za pružanje usluge (npr. s dobavljačima kozmetičkih proizvoda)</li>
+            <li>Kada to zahtijeva zakon ili nadležne institucije</li>
+            <li>Uz vaš izričiti pristanak</li>
+          </ul>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">5. Sigurnost podataka</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Implementirali smo odgovarajuće tehničke i organizacijske mjere za zaštitu vaših osobnih podataka od 
+            neovlaštenog pristupa, gubitka, zlouporabe ili otkrivanja. Pristup podacima imaju samo ovlašteni članovi 
+            našeg osoblja koji trebaju te podatke za obavljanje svojih dužnosti.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">6. Vaša prava</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">Imate pravo na:</p>
+          <ul class="list-disc pl-6 text-slate-700 space-y-2">
+            <li>Pristup svojim osobnim podacima</li>
+            <li>Ispravak netočnih ili nepotpunih podataka</li>
+            <li>Brisanje podataka u određenim okolnostima</li>
+            <li>Ograničavanje obrade podataka</li>
+            <li>Prenosivost podataka</li>
+            <li>Prigovor na obradu podataka</li>
+          </ul>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">7. Kolačići (Cookies)</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Naša web stranica koristi kolačiće za poboljšanje korisničkog iskustva. Kolačići su male datoteke koje se 
+            pohranjuju na vašem uređaju i pomažu nam analizirati promet na web stranici i prilagoditi sadržaj vašim potrebama.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">8. Zadržavanje podataka</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Vaše osobne podatke zadržavamo samo onoliko dugo koliko je potrebno za ispunjavanje svrha za koje su prikupljeni, 
+            odnosno dok ne zatražite njihovo brisanje ili dok ne prestane postojati zakonska osnova za njihovu obradu.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">9. Promjene pravila privatnosti</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Zadržavamo pravo izmjene ovih pravila privatnosti. O svim značajnim promjenama obavijestit ćemo vas putem 
+            e-maila ili objavom na našoj web stranici.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">10. Kontakt</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Za sva pitanja vezana uz zaštitu privatnosti možete nas kontaktirati:
+          </p>
+          <div class="bg-slate-50 p-6 rounded-lg">
+            <p class="text-slate-700 mb-2"><strong>Beauty House by Marijana Talović</strong></p>
+            <p class="text-slate-700 mb-2">Ulica Jela 79, 31000 Osijek</p>
+            <p class="text-slate-700 mb-2">Telefon: +385 31 280 678</p>
+            <p class="text-slate-700">E-mail: info@beautyhouse-marijana.hr</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

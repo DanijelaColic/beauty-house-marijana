@@ -1,6 +1,7 @@
 // API route for fetching services
 import type { APIRoute } from 'astro';
 import { db } from '@/lib/supabase';
+import { mockServices } from '@/lib/mock-services';
 
 
 export const GET: APIRoute = async () => {
@@ -20,7 +21,7 @@ export const GET: APIRoute = async () => {
       }
     );
   } catch (error) {
-    console.error('Error fetching services:', error);
+    console.error('Error fetching services from database:', error);
     
     // Log more details for debugging
     if (error instanceof Error) {
@@ -28,14 +29,16 @@ export const GET: APIRoute = async () => {
       console.error('Error stack:', error.stack);
     }
     
+    // Fallback to mock services when database is not configured
+    console.log('Falling back to mock services data');
     return new Response(
       JSON.stringify({
-        success: false,
-        error: 'Greška pri dohvaćanju usluga',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        success: true,
+        data: mockServices,
+        fallback: true, // Indicate this is fallback data
       }),
       {
-        status: 500,
+        status: 200,
         headers: {
           'Content-Type': 'application/json',
         },

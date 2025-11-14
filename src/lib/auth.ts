@@ -1,6 +1,8 @@
 // Authentication utilities for staff
 import { supabase } from './supabase';
 import type { StaffProfile, AuthSession } from '@/types';
+import { createServerClient } from '@supabase/ssr';
+import type { AstroCookies } from 'astro';
 
 export class AuthService {
   /**
@@ -11,33 +13,57 @@ export class AuthService {
     password: string
   ): Promise<{ session: AuthSession | null; error: string | null }> {
     try {
+      console.log('🔐 POČETAK PRIJAVE za:', email);
+      
       // Sign in with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('🔑 SUPABASE AUTH REZULTAT:', { 
+        uspjeh: !authError, 
+        korisnikId: authData?.user?.id,
+        greška: authError?.message,
+        korisnikEmail: authData?.user?.email
+      });
+
       if (authError) {
+        console.error('❌ GREŠKA AUTENTIFIKACIJE:', authError.message);
         return { session: null, error: authError.message };
       }
 
       if (!authData.user) {
+        console.error('❌ NEMA KORISNIČKIH PODATAKA');
         return { session: null, error: 'Prijava nije uspjela' };
       }
+
+      console.log('👤 DOHVAĆAM STAFF PROFIL za korisnik ID:', authData.user.id);
 
       // Get staff profile
       const profile = await this.getStaffProfile(authData.user.id);
 
+      console.log('📋 STAFF PROFIL REZULTAT:', profile ? {
+        id: profile.id,
+        email: profile.email,
+        uloga: profile.role,
+        aktivan: profile.active,
+        punoIme: profile.fullName
+      } : 'PROFIL NIJE PRONAĐEN');
+
       if (!profile) {
-        // Sign out if no staff profile found
+        console.error('❌ STAFF PROFIL NIJE PRONAĐEN - odjavljujem korisnika');
         await supabase.auth.signOut();
         return { session: null, error: 'Niste autorizirani kao osoblje' };
       }
 
       if (!profile.active) {
+        console.error('❌ STAFF PROFIL NIJE AKTIVAN - odjavljujem korisnika');
         await supabase.auth.signOut();
         return { session: null, error: 'Vaš račun je deaktiviran' };
       }
+
+      console.log('✅ PRIJAVA USPJEŠNA za:', profile.email, 'Uloga:', profile.role);
 
       const session: AuthSession = {
         user: {
@@ -49,8 +75,8 @@ export class AuthService {
 
       return { session, error: null };
     } catch (err) {
-      console.error('Sign in error:', err);
-      return { session: null, error: 'Došlo je do greške pri prijavi' };
+      console.error('💥 GREŠKA PRI PRIJAVI:', err);
+      return { session: null, error: `Greška pri prijavi: ${err.message}` };
     }
   }
 
@@ -117,17 +143,45 @@ export class AuthService {
    */
   async getStaffProfile(userId: string): Promise<StaffProfile | null> {
     try {
+      console.log('🔍 TRAŽIM STAFF PROFIL za user_id:', userId);
+      
       const { data, error } = await supabase
         .from('staff_profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .single();
 
-      if (error || !data) {
+      console.log('📊 BAZA PODATAKA ODGOVOR:', { 
+        pronađen: !!data, 
+        greška: error?.message,
+        greškaKod: error?.code,
+        greškaDetalji: error?.details,
+        podaci: data ? {
+          id: data.id,
+          user_id: data.user_id,
+          email: data.email,
+          full_name: data.full_name,
+          role: data.role,
+          active: data.active
+        } : null
+      });
+
+      if (error) {
+        console.error('❌ GREŠKA BAZE PODATAKA:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
         return null;
       }
 
-      return {
+      if (!data) {
+        console.error('❌ NEMA PODATAKA ZA KORISNIKA:', userId);
+        return null;
+      }
+
+      const profile = {
         id: data.id,
         email: data.email,
         fullName: data.full_name,
@@ -136,8 +190,11 @@ export class AuthService {
         createdAt: new Date(data.created_at),
         updatedAt: new Date(data.updated_at),
       };
+
+      console.log('✅ KREIRAN STAFF PROFIL OBJEKT:', profile);
+      return profile;
     } catch (err) {
-      console.error('Get staff profile error:', err);
+      console.error('💥 GREŠKA U getStaffProfile:', err);
       return null;
     }
   }
@@ -210,7 +267,7 @@ export class AuthService {
       const { error } = await supabase
         .from('staff_profiles')
         .update(updateData)
-        .eq('id', userId);
+        .eq('user_id', userId);
 
       if (error) {
         return { success: false, error: error.message };
@@ -258,13 +315,56 @@ export class AuthService {
 export const authService = new AuthService();
 
 // Server-side auth check helper for API routes
-export async function requireAuth(request: Request): Promise<{
+export async function requireAuth(request: Request, cookies?: AstroCookies): Promise<{
   authorized: boolean;
   session: AuthSession | null;
   error?: string;
 }> {
   try {
-    // Try to get token from Authorization header first (for API calls from client)
+    // If cookies are provided, use authenticated Supabase client
+    if (cookies) {
+      const authenticatedClient = createAuthenticatedSupabaseClient(cookies);
+      const { data: { user }, error: userError } = await authenticatedClient.auth.getUser();
+      
+      if (!userError && user) {
+        // Get staff profile using authenticated client (to respect RLS policies)
+        const { data: profileData, error: profileError } = await authenticatedClient
+          .from('staff_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profileError || !profileData || !profileData.active) {
+          return { 
+            authorized: false, 
+            session: null, 
+            error: !profileData ? 'Niste autorizirani kao osoblje' : 'Vaš račun je deaktiviran' 
+          };
+        }
+        
+        const profile = {
+          id: profileData.id,
+          email: profileData.email,
+          fullName: profileData.full_name,
+          role: profileData.role,
+          active: profileData.active,
+          createdAt: new Date(profileData.created_at),
+          updatedAt: new Date(profileData.updated_at),
+        };
+        
+        const session: AuthSession = {
+          user: {
+            id: user.id,
+            email: user.email || profile.email,
+          },
+          profile,
+        };
+        
+        return { authorized: true, session };
+      }
+    }
+
+    // Fallback: Try to get token from Authorization header first (for API calls from client)
     const authHeader = request.headers.get('Authorization');
     let userId: string | null = null;
 
@@ -332,5 +432,31 @@ export async function requireOwner(request: Request): Promise<{
   }
 
   return authCheck;
+}
+
+/**
+ * Create authenticated Supabase client for server-side API routes
+ * This client uses cookies to maintain the authenticated session
+ */
+export function createAuthenticatedSupabaseClient(cookies: AstroCookies) {
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
+
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    db: { schema: 'public' },
+    cookies: {
+      get: (key: string) => cookies.get(key)?.value,
+      set: (key: string, value: string, options: any) => {
+        cookies.set(key, value, options);
+      },
+      remove: (key: string, options: any) => {
+        cookies.delete(key, options);
+      },
+    },
+  });
 }
 

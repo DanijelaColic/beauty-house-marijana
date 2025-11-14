@@ -1,0 +1,219 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+const currentDate = "30. 10. 2024.";
+---
+
+<BaseLayout 
+  title="Uvjeti korištenja - Beauty House by Marijana Talović"
+  description="Uvjeti korištenja usluga i web stranice Beauty House by Marijana Talović frizerskog salona u Osijeku."
+>
+  <Header />
+  
+  <main class="container-wide py-16">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl md:text-4xl font-bold text-textPrimary mb-8">
+        Uvjeti korištenja
+      </h1>
+      
+      <div class="prose prose-slate max-w-none">
+        <p class="text-lg text-slate-600 mb-8">
+          Posljednje ažuriranje: {currentDate}
+        </p>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">1. Općenito</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Dobrodošli u Beauty House by Marijana Talović. Korištenjem naših usluga i web stranice pristajete na ove 
+            uvjete korištenja. Molimo pažljivo pročitajte ove uvjete prije korištenja naših usluga.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">2. Usluge salona</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">Beauty House by Marijana Talović pruža sljedeće usluge:</p>
+          <ul class="list-disc pl-6 text-slate-700 space-y-2">
+            <li>Šišanje i oblikovanje kose</li>
+            <li>Bojanje i toniranje kose</li>
+            <li>Pramenovi i meliranje</li>
+            <li>Tretmani za kosu i vlasište</li>
+            <li>Svečane frizure</li>
+            <li>Savjetovanje o njezi kose</li>
+          </ul>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">3. Rezervacije</h2>
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">3.1 Način rezervacije</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Rezervacije možete napraviti putem naše web stranice, telefonski ili osobno u salonu. 
+                Preporučujemo rezervaciju unaprijed kako biste osigurali željeni termin.
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">3.2 Potvrda rezervacije</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Sve rezervacije bit će potvrđene putem SMS-a ili e-maila. Rezervacija je važeća tek nakon potvrde.
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">3.3 Otkazivanje i promjene</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Molimo otkazujte ili mijenjajte rezervacije najmanje 24 sata unaprijed. Rezervacije otkazane manje od 
+                24 sata unaprijed mogu biti naplaćene 50% cijene usluge.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">4. Cijene i plaćanje</h2>
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">4.1 Cijene usluga</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Cijene usluga su dostupne na našoj web stranici i u salonu. Zadržavamo pravo promjene cijena uz 
+                prethodnu najavu od 7 dana.
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">4.2 Načini plaćanja</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Prihvaćamo plaćanje gotovinom i karticama. Plaćanje se vrši nakon pružene usluge.
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">4.3 Dodatni troškovi</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Za iznimno dugu ili gustu kosu mogu se naplatiti dodatni troškovi koji će biti najavljeni prije početka usluge.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">5. Odgovornost i ograničenja</h2>
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">5.1 Alergije i osjetljivost</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Klijenti su dužni obavijestiti o svim alergijama i osjetljivostima prije početka tretmana. 
+                Salon nije odgovoran za reakcije koje nisu prethodno najavljene.
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">5.2 Stanje kose</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Rezultat tretmana ovisi o početnom stanju kose. Salon će dati najbolju procjenu mogućih rezultata, 
+                ali ne jamči specifične ishode.
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">5.3 Osobni predmeti</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Salon nije odgovoran za izgubljene ili oštećene osobne predmete klijenata.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">6. Ponašanje u salonu</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Očekujemo od svih klijenata poštovanje prema osoblju i drugim klijentima. Zadržavamo pravo odbijanja 
+            usluge klijentima koji se ponašaju neprikladno ili ometaju rad salona.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">7. Zdravlje i sigurnost</h2>
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">7.1 Higijena</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Salon poštuje sve propisane mjere higijene i dezinfekcije. Svi alati se steriliziraju nakon svake upotrebe.
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">7.2 Zdravstveno stanje</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Molimo ne dolazite u salon ako ste bolesni ili imate simptome zaraznih bolesti. 
+                U takvim slučajevima možete besplatno prebaciti rezervaciju.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">8. Korištenje web stranice</h2>
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">8.1 Dozvoljeno korištenje</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Web stranica je namijenjena rezervaciji termina i informiranju o uslugama. 
+                Zabranjeno je bilo kakvo zlouporaba ili neovlašteno korištenje.
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-medium text-textPrimary mb-2">8.2 Dostupnost</h3>
+              <p class="text-slate-700 leading-relaxed">
+                Trudimo se održati web stranicu dostupnom 24/7, ali ne jamčimo neprekidnu dostupnost 
+                zbog održavanja ili tehničkih problema.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">9. Intelektualno vlasništvo</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Sav sadržaj na web stranici, uključujući tekstove, slike i dizajn, zaštićen je autorskim pravima. 
+            Zabranjeno je kopiranje ili korištenje bez pisane dozvole.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">10. Promjene uvjeta</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Zadržavamo pravo izmjene ovih uvjeta korištenja. Promjene će biti objavljene na web stranici, 
+            a značajnije promjene bit će najavljene putem e-maila.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">11. Mjerodavno pravo</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Ovi uvjeti korištenja regulirani su hrvatskim pravom. Svi sporovi rješavaju se pred nadležnim sudovima u Osijeku.
+          </p>
+        </section>
+
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold text-textPrimary mb-4">12. Kontakt</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">
+            Za sva pitanja vezana uz ove uvjete korištenja možete nas kontaktirati:
+          </p>
+          <div class="bg-slate-50 p-6 rounded-lg">
+            <p class="text-slate-700 mb-2"><strong>Beauty House by Marijana Talović</strong></p>
+            <p class="text-slate-700 mb-2">Ulica Jela 79, 31000 Osijek</p>
+            <p class="text-slate-700 mb-2">Telefon: +385 31 280 678</p>
+            <p class="text-slate-700">E-mail: info@beautyhouse-marijana.hr</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

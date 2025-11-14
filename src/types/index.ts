@@ -55,6 +55,8 @@ export interface Booking {
   // Administration
   adminId?: string;
   admin?: User;
+  staffId?: string; // ID iz staff_profiles tablice (ne user_id)
+  staff?: StaffProfile; // Referenca na staff profil
   
   createdAt: Date;
   updatedAt: Date;
@@ -84,6 +86,7 @@ export interface TimeOff {
   allDay: boolean;
   recurring: boolean;
   active: boolean;
+  staffId?: string; // Optional: if null, applies to all staff; if set, applies only to specific staff
   createdAt: Date;
   updatedAt: Date;
 }
@@ -133,6 +136,17 @@ export interface StaffProfile {
   email: string;
   fullName?: string;
   role: StaffRole;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Staff interface for frontend (booking form)
+export interface Staff {
+  id: string;
+  name: string;
+  avatar: string;
+  description?: string;
   active: boolean;
   createdAt: Date;
   updatedAt: Date;

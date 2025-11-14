@@ -10,7 +10,8 @@ export class SlotCalculator {
   constructor(
     private businessHours: BusinessHours[],
     private timeOff: TimeOff[],
-    private existingBookings: Booking[]
+    private existingBookings: Booking[],
+    private staffId?: string // Optional: filter time-off for specific staff
   ) {}
 
   /**
@@ -168,7 +169,7 @@ export class SlotCalculator {
    * Check if a slot time range conflicts with existing bookings
    */
   private isSlotBooked(slotStart: Date, slotEnd: Date): boolean {
-    return this.existingBookings.some(booking => {
+    const isBooked = this.existingBookings.some(booking => {
       const bookingStart = booking.startAt;
       const bookingEnd = booking.endAt;
 
@@ -178,6 +179,8 @@ export class SlotCalculator {
         booking.status !== 'CANCELED'
       );
     });
+    
+    return isBooked;
   }
 
   /**
@@ -186,6 +189,13 @@ export class SlotCalculator {
   private isDateInTimeOff(date: Date): boolean {
     return this.timeOff.some(timeOff => {
       if (!timeOff.active) return false;
+
+      // If staffId is provided, check if this time-off applies to this staff
+      // Global time-off (staffId is undefined/null) applies to all staff
+      // Individual time-off (staffId is set) applies only to that staff
+      if (this.staffId && timeOff.staffId && timeOff.staffId !== this.staffId) {
+        return false; // This time-off is for a different staff member
+      }
 
       return isWithinInterval(date, {
         start: timeOff.startDate,
@@ -203,12 +213,13 @@ export async function getAvailableSlots(
   serviceId: string,
   businessHours: BusinessHours[],
   timeOff: TimeOff[],
-  existingBookings: Booking[]
+  existingBookings: Booking[],
+  staffId?: string
 ): Promise<TimeSlot[]> {
   const slotDate = parseISO(date);
   const service = { duration: 30 } as Service; // This should be fetched from the service
 
-  const calculator = new SlotCalculator(businessHours, timeOff, existingBookings);
+  const calculator = new SlotCalculator(businessHours, timeOff, existingBookings, staffId);
   return calculator.calculateAvailableSlots(slotDate, service);
 }
 

@@ -17,6 +17,8 @@ export interface BookingEmailData {
   bookingId: string;
   cancelToken: string;
   notes?: string;
+  staffCode?: string; // Kod djelatnika (ID djelatnika)
+  staffName?: string; // Ime djelatnika (opcionalno)
 }
 
 export async function sendBookingConfirmation(data: BookingEmailData): Promise<boolean> {
@@ -74,18 +76,43 @@ export async function sendAdminNotification(data: BookingEmailData): Promise<boo
 }
 
 function generateBookingConfirmationHTML(data: BookingEmailData): string {
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('hr-HR', {
+  // Debug log za provjeru podataka u email template-u
+  console.log('📧 Generating email HTML with data:', {
+    staffName: data.staffName,
+    staffCode: data.staffCode,
+    hasStaffName: !!data.staffName,
+  });
+  
+  const formatDate = (date: Date | string) => {
+    // Ensure we have a Date object
+    const dateObj = date instanceof Date ? date : new Date(date);
+    
+    // Use toLocaleString to format in Croatian locale with timezone awareness
+    return dateObj.toLocaleString('hr-HR', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'Europe/Zagreb', // Explicitly set timezone to avoid issues
     });
   };
 
   const cancelUrl = `${import.meta.env.PUBLIC_SITE_URL || 'https://beauty-house-marijana.vercel.app'}/rezervacije/otkazi?token=${data.cancelToken}`;
+  
+  // Generiraj HTML za djelatnika ako postoji
+  const staffHtml = data.staffName ? `<p><strong>Djelatnik:</strong> ${data.staffName}</p>` : '';
+  
+  // Generiraj HTML za napomenu ako postoji
+  const notesHtml = data.notes ? `<p><strong>Napomena:</strong> ${data.notes}</p>` : '';
+  
+  // Debug log za provjeru generiranog HTML-a
+  console.log('📧 Generated staff HTML:', {
+    staffHtml: staffHtml,
+    staffName: data.staffName,
+    hasStaffHtml: !!staffHtml,
+  });
 
   return `
     <!DOCTYPE html>
@@ -122,7 +149,8 @@ function generateBookingConfirmationHTML(data: BookingEmailData): string {
             <p><strong>Datum i vrijeme:</strong> ${formatDate(data.startAt)}</p>
             <p><strong>Trajanje:</strong> ${Math.round((data.endAt.getTime() - data.startAt.getTime()) / (1000 * 60))} minuta</p>
             <p><strong>Broj rezervacije:</strong> ${data.bookingId}</p>
-            ${data.notes ? `<p><strong>Napomena:</strong> ${data.notes}</p>` : ''}
+            ${staffHtml}
+            ${notesHtml}
           </div>
           
           <p><strong>Važne informacije:</strong></p>

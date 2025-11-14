@@ -1,20 +1,33 @@
 import type { APIRoute } from 'astro';
-import { authService } from '@/lib/auth';
+import { createAuthenticatedSupabaseClient } from '@/lib/auth';
 
 
 export const GET: APIRoute = async ({ cookies }) => {
   try {
-    // Check Supabase session
-    const { session, error } = await authService.getSession();
+    console.log('🔍 GET /api/auth/session - Checking session...');
+    
+    // Use authenticated Supabase client to read session from cookies
+    const supabase = createAuthenticatedSupabaseClient(cookies);
+    
+    // Get Supabase user from session
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    console.log('👤 Supabase user check:', {
+      hasUser: !!user,
+      userId: user?.id,
+      email: user?.email,
+      error: userError?.message,
+    });
 
-    if (error) {
+    if (userError || !user) {
+      console.error('❌ No Supabase session found:', userError);
       // Clear invalid cookie
       cookies.delete('staff_session', { path: '/' });
 
       return new Response(
         JSON.stringify({
           success: false,
-          error,
+          error: userError?.message || 'Niste prijavljeni',
         }),
         {
           status: 401,
@@ -23,14 +36,28 @@ export const GET: APIRoute = async ({ cookies }) => {
       );
     }
 
-    if (!session) {
-      // Clear cookie if no session
+    // Get staff profile using authenticated client (to respect RLS policies)
+    const { data: profileData, error: profileError } = await supabase
+      .from('staff_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    console.log('📋 Staff profile check:', {
+      found: !!profileData,
+      error: profileError?.message,
+      active: profileData?.active,
+    });
+
+    if (profileError || !profileData || !profileData.active) {
+      console.error('❌ Staff profile error:', profileError);
+      // Clear cookie if not authorized
       cookies.delete('staff_session', { path: '/' });
 
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Niste prijavljeni',
+          error: !profileData ? 'Niste autorizirani kao osoblje' : 'Vaš račun je deaktiviran',
         }),
         {
           status: 401,
@@ -39,11 +66,25 @@ export const GET: APIRoute = async ({ cookies }) => {
       );
     }
 
+    const session = {
+      user: {
+        id: user.id,
+        email: user.email || profileData.email,
+      },
+      profile: {
+        id: profileData.id,
+        email: profileData.email,
+        fullName: profileData.full_name,
+        role: profileData.role,
+        active: profileData.active,
+      },
+    };
+
     // Update cookie
     cookies.set('staff_session', JSON.stringify({
-      userId: session.user.id,
-      email: session.user.email,
-      role: session.profile.role,
+      userId: user.id,
+      email: user.email,
+      role: profileData.role,
     }), {
       path: '/',
       httpOnly: true,
@@ -51,6 +92,8 @@ export const GET: APIRoute = async ({ cookies }) => {
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
+
+    console.log('✅ Session valid:', { userId: user.id, role: profileData.role });
 
     return new Response(
       JSON.stringify({
@@ -65,12 +108,13 @@ export const GET: APIRoute = async ({ cookies }) => {
         headers: { 'Content-Type': 'application/json' },
       }
     );
-  } catch (err) {
-    console.error('Session API error:', err);
+  } catch (err: any) {
+    console.error('💥 Session API error:', err);
     return new Response(
       JSON.stringify({
         success: false,
         error: 'Greška pri provjeri sesije',
+        details: import.meta.env.DEV ? err.message : undefined,
       }),
       {
         status: 500,

@@ -1,0 +1,65 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import AdminLayout from '@/components/admin/AdminLayout';
+import StaffAvailabilityView from '@/components/admin/StaffAvailabilityView';
+
+// Check if user is authenticated
+const sessionCookie = Astro.cookies.get('staff_session');
+
+if (!sessionCookie) {
+  return Astro.redirect('/admin/login');
+}
+
+// Verify session - pass all cookies from request
+try {
+  // Get all cookies from the request to pass to session API
+  const allCookies = Astro.request.headers.get('cookie') || '';
+  
+  const sessionCheck = await fetch(`${Astro.url.origin}/api/auth/session`, {
+    headers: {
+      'Cookie': allCookies, // Pass all cookies including Supabase auth cookies
+    },
+  });
+  
+  console.log('Session check result:', sessionCheck.status, sessionCheck.statusText);
+  
+  if (!sessionCheck.ok) {
+    console.error('Session check failed, redirecting to login');
+    return Astro.redirect('/admin/login');
+  }
+  
+  const sessionData = await sessionCheck.json();
+  console.log('Session data:', sessionData.success ? 'Valid' : 'Invalid');
+  
+  if (!sessionData.success || !sessionData.data?.profile) {
+    return Astro.redirect('/admin/login');
+  }
+  
+  const userRole = sessionData.data.profile.role;
+  const currentStaffId = sessionData.data.profile.id;
+  const currentStaffName = sessionData.data.profile.fullName || sessionData.data.profile.email;
+---}
+
+<BaseLayout
+  title="Dostupnost | Beauty House Marijana"
+  description="Pregled dostupnih termina za djelatnike"
+>
+  <AdminLayout client:load>
+    <div class="space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">Dostupnost termina</h2>
+        <p class="text-gray-600 mt-1">
+          Pregled slobodnih termina za djelatnike
+        </p>
+      </div>
+
+      <StaffAvailabilityView 
+        client:load
+        userRole={userRole}
+        currentStaffId={currentStaffId}
+        currentStaffName={currentStaffName}
+      />
+    </div>
+  </AdminLayout>
+</BaseLayout>
+

@@ -1,0 +1,48 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import AdminLayout from '@/components/admin/AdminLayout';
+import TimeOffManagement from '@/components/admin/TimeOffManagement';
+
+// Check if user is authenticated
+const sessionCookie = Astro.cookies.get('staff_session');
+
+if (!sessionCookie) {
+  return Astro.redirect('/admin/login');
+}
+
+// Verify session - pass all cookies from request
+try {
+  // Get all cookies from the request to pass to session API
+  const allCookies = Astro.request.headers.get('cookie') || '';
+  
+  const sessionCheck = await fetch(`${Astro.url.origin}/api/auth/session`, {
+    headers: {
+      'Cookie': allCookies, // Pass all cookies including Supabase auth cookies
+    },
+  });
+  
+  if (!sessionCheck.ok) {
+    return Astro.redirect('/admin/login');
+  }
+  
+  const sessionData = await sessionCheck.json();
+  
+  // Only owner can access settings
+  if (!sessionData.success || sessionData.data?.profile?.role !== 'owner') {
+    return Astro.redirect('/admin');
+  }
+} catch (err) {
+  console.error('Session check error:', err);
+  return Astro.redirect('/admin/login');
+}
+---
+
+<BaseLayout
+  title="Postavke | Beauty House Marijana"
+  description="Postavke sistema"
+>
+  <AdminLayout client:load>
+    <TimeOffManagement client:load />
+  </AdminLayout>
+</BaseLayout>
+
