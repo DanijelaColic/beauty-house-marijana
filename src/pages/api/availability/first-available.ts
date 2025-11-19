@@ -146,9 +146,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       if (checkDate.getDay() === 0) {
         continue;
       }
-
-      // Get time off for this date (filtered by staff member if checking individual staff)
-      const timeOff = await db.getTimeOff(dateStr, dateStr, staffMember.id).catch(() => []);
       
       // Get bookings for this date
       let allBookings: any[] = [];
@@ -168,6 +165,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
       // Check availability for each staff member
       for (const staffMember of staffMembersToCheck) {
+        // Get time off for this date and staff member
+        const timeOff = await db.getTimeOff(dateStr, dateStr, staffMember.id).catch(() => []);
+        
         // Filter bookings by staff_id
         const existingBookings = allBookings.filter(
           (booking) => booking.staffId === staffMember.id
