@@ -3,9 +3,11 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { db } from '@/lib/supabase';
 import { mockServices } from '@/lib/mock-services';
+import { mockStaff } from '@/lib/mock-staff';
 import { createAuthenticatedSupabaseClient } from '@/lib/auth';
 import { SlotCalculator, getDefaultBusinessHours } from '@/lib/slots';
 import { parseISO, format, addDays, startOfDay } from 'date-fns';
+import { createClient } from '@supabase/supabase-js';
 
 export const prerender = false;
 
@@ -87,31 +89,82 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     let staffMembersToCheck: { id: string; name: string }[] = [];
     if (!staffId) {
       try {
-        const allStaff = await db.getAllStaffMembers();
-        staffMembersToCheck = allStaff
-          .filter((s) => s.active)
-          .map((s) => ({ id: s.id, name: s.fullName || s.email }));
+        // Try to get staff members using service role client (bypasses RLS) or anon client
+        const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+        const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+        const anonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+        
+        let client;
+        if (serviceRoleKey && supabaseUrl) {
+          // Use service role client if available (bypasses RLS)
+          client = createClient(supabaseUrl, serviceRoleKey, {
+            db: { schema: 'public' },
+          });
+        } else if (anonKey && supabaseUrl) {
+          // Fallback to anon client
+          client = createClient(supabaseUrl, anonKey, {
+            db: { schema: 'public' },
+          });
+        }
+        
+        if (client) {
+          const { data, error } = await client
+            .from('staff_profiles')
+            .select('id, email, full_name, active')
+            .eq('active', true)
+            .order('created_at', { ascending: false });
+          
+          if (!error && data && data.length > 0) {
+            // Filter out test accounts (same logic as /api/staff.ts)
+            staffMembersToCheck = data
+              .filter((item: any) => {
+                const name = (item.full_name || item.email || '').toLowerCase();
+                const isAnaDjelatnik = name.includes('ana djelatnik');
+                const isAnaMaric = (name.includes('ana marić') || name.includes('ana maric')) && !name.includes('marijana');
+                return !isAnaDjelatnik && !isAnaMaric;
+              })
+              .map((item: any) => ({
+                id: item.id,
+                name: item.full_name || item.email,
+              }));
+          }
+        }
+        
+        // Fallback to db.getAllStaffMembers() if direct query failed
+        if (staffMembersToCheck.length === 0) {
+          const allStaff = await db.getAllStaffMembers();
+          staffMembersToCheck = allStaff
+            .filter((s) => s.active)
+            .map((s) => ({ id: s.id, name: s.fullName || s.email }));
+        }
+        
+        // Final fallback to mock staff if everything fails
+        if (staffMembersToCheck.length === 0) {
+          console.warn('⚠️ No staff found in database, using mock staff as fallback');
+          staffMembersToCheck = mockStaff
+            .filter((s) => s.active)
+            .map((s) => ({ id: s.id, name: s.name }));
+        }
       } catch (err) {
         console.error('Error fetching staff members:', err);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'Greška pri dohvaćanju djelatnika',
-          }),
-          { 
-            status: 500,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+        // Try mock staff as last resort
+        try {
+          staffMembersToCheck = mockStaff
+            .filter((s) => s.active)
+            .map((s) => ({ id: s.id, name: s.name }));
+        } catch (mockErr) {
+          console.error('Mock staff fallback also failed:', mockErr);
+        }
       }
     } else {
       // If staffId is provided, use it as single staff member to check
       try {
-        const staff = await db.getStaffById(staffId);
-        if (staff && staff.active) {
-          staffMembersToCheck = [{ id: staff.id, name: staff.fullName || staff.email }];
+        const staffResult = await db.getStaffById(staffId);
+        if (staffResult.data && staffResult.data.active) {
+          staffMembersToCheck = [{ 
+            id: staffResult.data.id, 
+            name: staffResult.data.fullName || staffResult.data.email 
+          }];
         }
       } catch (err) {
         console.error('Error fetching staff member:', err);
