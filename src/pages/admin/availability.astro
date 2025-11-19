@@ -38,6 +38,10 @@ try {
   const userRole = sessionData.data.profile.role;
   const currentStaffId = sessionData.data.profile.id;
   const currentStaffName = sessionData.data.profile.fullName || sessionData.data.profile.email;
+} catch (error) {
+  console.error('Error checking session:', error);
+  return Astro.redirect('/admin/login');
+}
 ---}
 
 <BaseLayout
