@@ -89,21 +89,52 @@ export function BookingForm({ onSuccess, onError }: BookingFormProps) {
   const loadInitialData = async () => {
     try {
       setLoading(true);
+      setError('');
+      
       const [servicesRes, staffRes] = await Promise.all([
         fetch('/api/services'),
         fetch('/api/staff'),
       ]);
 
+      // Handle services response
       if (servicesRes.ok) {
         const servicesData = await servicesRes.json();
-        setServices(servicesData.data || []);
+        console.log('Services response:', servicesData);
+        
+        if (servicesData.success && servicesData.data) {
+          setServices(servicesData.data);
+        } else if (servicesData.data) {
+          // Fallback: if data exists but success is not set
+          setServices(servicesData.data);
+        } else {
+          console.error('Services data is missing:', servicesData);
+          setError('Greška pri učitavanju usluga');
+        }
+      } else {
+        const errorText = await servicesRes.text();
+        console.error('Services API error:', servicesRes.status, errorText);
+        setError('Greška pri učitavanju usluga');
       }
 
+      // Handle staff response
       if (staffRes.ok) {
         const staffData = await staffRes.json();
-        setStaff(staffData.data || []);
+        console.log('Staff response:', staffData);
+        
+        if (staffData.success && staffData.data) {
+          setStaff(staffData.data);
+        } else if (staffData.data) {
+          // Fallback: if data exists but success is not set
+          setStaff(staffData.data);
+        } else {
+          console.error('Staff data is missing:', staffData);
+        }
+      } else {
+        const errorText = await staffRes.text();
+        console.error('Staff API error:', staffRes.status, errorText);
       }
     } catch (err) {
+      console.error('Error loading initial data:', err);
       setError('Greška pri učitavanju podataka');
     } finally {
       setLoading(false);
@@ -507,6 +538,20 @@ function ServiceStep({ services, loading, selectedService, onServiceSelect }: Se
       <div className="flex items-center justify-center py-8">
         <Loader2 className="w-5 h-5 animate-spin" />
         <span className="ml-2 text-sm">Učitavam usluge...</span>
+      </div>
+    );
+  }
+
+  if (!services || services.length === 0) {
+    return (
+      <div className="h-full flex flex-col">
+        <h2 className="text-xl font-semibold mb-4">Odaberite uslugu</h2>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-600 mb-2">Nema dostupnih usluga</p>
+            <p className="text-sm text-gray-500">Molimo pokušajte ponovno učitati stranicu</p>
+          </div>
+        </div>
       </div>
     );
   }

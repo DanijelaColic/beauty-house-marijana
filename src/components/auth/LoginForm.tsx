@@ -36,26 +36,16 @@ export default function LoginForm() {
       console.log('📡 Response type:', res.type);
       console.log('📡 Response ok:', res.ok);
 
-      // Try to parse as JSON first
+      // Parse response as JSON
       let result;
-      const contentType = res.headers.get('content-type');
-      console.log('📡 Content-Type:', contentType);
-      
-      if (contentType && contentType.includes('application/json')) {
-        try {
-          const responseText = await res.text();
-          console.log('📡 Raw response text:', responseText);
-          result = JSON.parse(responseText);
-          console.log('📦 Login response data (parsed):', result);
-        } catch (parseError) {
-          console.error('❌ JSON parse error:', parseError);
-          setError('Greška pri parsiranju odgovora');
-          return;
-        }
-      } else {
-        const text = await res.text();
-        console.error('❌ Login failed - non-JSON response:', text);
-        setError(text || `Login error ${res.status}`);
+      try {
+        result = await res.json();
+        console.log('📦 Login response data:', result);
+      } catch (parseError) {
+        console.error('❌ JSON parse error:', parseError);
+        const text = await res.text().catch(() => 'Unknown error');
+        console.error('❌ Raw response text:', text);
+        setError('Greška pri parsiranju odgovora servera');
         return;
       }
 

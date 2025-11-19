@@ -60,12 +60,101 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     console.log('✅ Authentication successful, fetching staff profile for user:', authData.user.id);
 
-    // Get staff profile using authenticated client (to respect RLS policies)
-    const { data: profileData, error: profileError } = await supabase
-      .from('staff_profiles')
-      .select('*')
-      .eq('user_id', authData.user.id)
-      .single();
+    // Get staff profile - use service role client to bypass RLS during login
+    // This ensures we can always check if user has a staff profile, regardless of RLS policies
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    let profileData = null;
+    let profileError = null;
+    
+    // Try with service role client first (bypasses RLS)
+    if (serviceRoleKey && supabaseUrl) {
+      const { createClient } = await import('@supabase/supabase-js');
+      const serviceClient = createClient(supabaseUrl, serviceRoleKey, {
+        db: { schema: 'public' },
+      });
+      
+      console.log('🔑 Using service role client to fetch staff profile (bypasses RLS)');
+      const { data, error } = await serviceClient
+        .from('staff_profiles')
+        .select('*')
+        .eq('user_id', authData.user.id)
+        .single();
+      
+      profileData = data;
+      profileError = error;
+      
+      if (profileError && profileError.code === 'PGRST116') {
+        // Try with id as fallback
+        console.log('⚠️ Profile not found with user_id, trying with id...');
+        const { data: altData, error: altError } = await serviceClient
+          .from('staff_profiles')
+          .select('*')
+          .eq('id', authData.user.id)
+          .single();
+        
+        if (!altError && altData) {
+          profileData = altData;
+          profileError = null;
+          console.log('✅ Found profile using id instead of user_id');
+        } else {
+          // Try with email as last resort
+          console.log('⚠️ Profile not found with id, trying with email...');
+          const { data: emailData, error: emailError } = await serviceClient
+            .from('staff_profiles')
+            .select('*')
+            .eq('email', authData.user.email?.toLowerCase())
+            .single();
+          
+          if (!emailError && emailData) {
+            profileData = emailData;
+            profileError = null;
+            console.log('✅ Found profile using email:', authData.user.email);
+          }
+        }
+      }
+    } else {
+      // Fallback to authenticated client if service role key is not available
+      console.log('⚠️ Service role key not available, using authenticated client');
+      const { data, error } = await supabase
+        .from('staff_profiles')
+        .select('*')
+        .eq('user_id', authData.user.id)
+        .single();
+      
+      profileData = data;
+      profileError = error;
+      
+      if (profileError && profileError.code === 'PGRST116') {
+        console.log('⚠️ Profile not found with user_id, trying with id...');
+        const { data: altData, error: altError } = await supabase
+          .from('staff_profiles')
+          .select('*')
+          .eq('id', authData.user.id)
+          .single();
+        
+        if (!altError && altData) {
+          profileData = altData;
+          profileError = null;
+          console.log('✅ Found profile using id instead of user_id');
+        } else {
+          // Try with email as last resort
+          console.log('⚠️ Profile not found with id, trying with email...');
+          const { data: emailData, error: emailError } = await supabase
+            .from('staff_profiles')
+            .select('*')
+            .eq('email', authData.user.email?.toLowerCase())
+            .single();
+          
+          if (!emailError && emailData) {
+            profileData = emailData;
+            profileError = null;
+            console.log('✅ Found profile using email:', authData.user.email);
+          }
+        }
+      }
+    }
 
     console.log('📋 Staff profile query result:', {
       found: !!profileData,
@@ -77,24 +166,34 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       profileEmail: profileData?.email,
       profileRole: profileData?.role,
       profileActive: profileData?.active,
+      profileUserId: profileData?.user_id,
+      authUserId: authData.user.id,
+      authUserEmail: authData.user.email,
+      usedServiceRole: !!serviceRoleKey,
     });
 
     if (profileError || !profileData) {
       console.error('❌ Staff profile error:', {
         error: profileError,
         hasProfile: !!profileData,
+        userId: authData.user.id,
       });
       // Sign out if not authorized
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch (signOutError) {
+        console.error('Error signing out:', signOutError);
+      }
       return new Response(
         JSON.stringify({
           success: false,
-          error: !profileData ? "Niste autorizirani kao osoblje" : "Greška pri dohvaćanju profila",
+          error: !profileData ? "Niste autorizirani kao osoblje. Provjerite da li postoji staff_profiles zapis za vaš korisnički račun." : "Greška pri dohvaćanju profila",
           details: import.meta.env.DEV ? {
             message: profileError?.message,
             code: profileError?.code,
             details: profileError?.details,
             hint: profileError?.hint,
+            userId: authData.user.id,
           } : undefined,
         }),
         {
@@ -128,17 +227,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     };
 
     // Set custom session cookie for quick access (optional, Supabase cookies are already set)
-    cookies.set('staff_session', JSON.stringify({
-      userId: authData.user.id,
-      email: authData.user.email,
-      role: profile.role,
-    }), {
-      path: '/',
-      httpOnly: true,
-      secure: import.meta.env.PROD,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
+    // Note: Supabase SSR client already sets auth cookies automatically
+    try {
+      cookies.set('staff_session', JSON.stringify({
+        userId: authData.user.id,
+        email: authData.user.email,
+        role: profile.role,
+      }), {
+        path: '/',
+        httpOnly: true,
+        secure: import.meta.env.PROD, // Use secure cookies in production
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      });
+      console.log('✅ Staff session cookie set successfully');
+    } catch (cookieError) {
+      console.error('⚠️ Error setting staff_session cookie:', cookieError);
+      // Don't fail login if custom cookie fails - Supabase cookies are already set
+    }
 
     return new Response(
       JSON.stringify({

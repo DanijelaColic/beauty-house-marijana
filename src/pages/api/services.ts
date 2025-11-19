@@ -6,17 +6,25 @@ import { mockServices } from '@/lib/mock-services';
 
 export const GET: APIRoute = async () => {
   try {
+    console.log('Fetching services from database...');
     const services = await db.getServices();
+    console.log(`Successfully fetched ${services.length} services`);
+    
+    // Ensure we always return an array
+    const servicesArray = Array.isArray(services) ? services : [];
     
     return new Response(
       JSON.stringify({
         success: true,
-        data: services,
+        data: servicesArray,
       }),
       {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
         },
       }
     );
@@ -41,6 +49,9 @@ export const GET: APIRoute = async () => {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
         },
       }
     );
