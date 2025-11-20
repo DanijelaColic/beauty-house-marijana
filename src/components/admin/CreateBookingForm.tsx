@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { format, startOfDay, addDays, isBefore, isAfter } from 'date-fns';
-import { hr } from 'date-fns/locale/hr';
+import hr from 'date-fns/locale/hr';
 import type { Service, StaffProfile, TimeSlot } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';

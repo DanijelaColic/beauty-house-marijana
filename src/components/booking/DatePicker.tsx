@@ -3,7 +3,7 @@
 import React from 'react';
 import { DayPicker } from 'react-day-picker';
 import { format, addDays, isBefore, startOfDay } from 'date-fns';
-import { hr } from 'date-fns/locale/hr'; // Croatian locale
+import hr from 'date-fns/locale/hr'; // Croatian locale
 import { Card, CardContent } from '@/components/ui/card';
 
 interface DatePickerProps {

@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { DayPicker } from 'react-day-picker';
 import { format, startOfDay } from 'date-fns';
-import { hr } from 'date-fns/locale/hr';
+import hr from 'date-fns/locale/hr';
 import type { Booking } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
