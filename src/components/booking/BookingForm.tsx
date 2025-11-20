@@ -228,10 +228,21 @@ export function BookingForm({ onSuccess, onError }: BookingFormProps) {
       const response = await fetch('/api/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies
         body: JSON.stringify(bookingData),
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        console.error('Failed to parse booking response:', parseError);
+        const text = await response.text().catch(() => 'Unknown error');
+        console.error('Raw response:', text);
+        throw new Error('Greška pri parsiranju odgovora servera');
+      }
+
+      console.log('Booking response:', { status: response.status, ok: response.ok, result });
 
       if (response.ok && result.success) {
         setBookingState(prev => ({ ...prev, bookingId: result.data.booking.id }));

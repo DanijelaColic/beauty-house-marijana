@@ -80,18 +80,29 @@ export const GET: APIRoute = async ({ cookies }) => {
       },
     };
 
-    // Update cookie
-    cookies.set('staff_session', JSON.stringify({
-      userId: user.id,
-      email: user.email,
-      role: profileData.role,
-    }), {
-      path: '/',
-      httpOnly: true,
-      secure: import.meta.env.PROD,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
+    // Update cookie with proper options for Vercel
+    try {
+      const cookieOptions: any = {
+        path: '/',
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      };
+      
+      // Only set secure flag if we're on HTTPS (Vercel always uses HTTPS)
+      if (import.meta.env.PROD) {
+        cookieOptions.secure = true;
+      }
+      
+      cookies.set('staff_session', JSON.stringify({
+        userId: user.id,
+        email: user.email,
+        role: profileData.role,
+      }), cookieOptions);
+    } catch (cookieError) {
+      console.error('⚠️ Error updating staff_session cookie:', cookieError);
+      // Don't fail session check if cookie update fails
+    }
 
     console.log('✅ Session valid:', { userId: user.id, role: profileData.role });
 

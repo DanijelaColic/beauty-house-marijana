@@ -439,24 +439,53 @@ export async function requireOwner(request: Request): Promise<{
  * This client uses cookies to maintain the authenticated session
  */
 export function createAuthenticatedSupabaseClient(cookies: AstroCookies) {
-  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  try {
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables');
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('❌ Missing Supabase environment variables:', {
+        hasUrl: !!supabaseUrl,
+        hasAnonKey: !!supabaseAnonKey,
+      });
+      throw new Error('Missing Supabase environment variables');
+    }
+
+    console.log('✅ Creating Supabase server client:', {
+      urlPrefix: supabaseUrl.substring(0, 30) + '...',
+      hasAnonKey: !!supabaseAnonKey,
+    });
+
+    return createServerClient(supabaseUrl, supabaseAnonKey, {
+      db: { schema: 'public' },
+      cookies: {
+        get: (key: string) => {
+          try {
+            return cookies.get(key)?.value;
+          } catch (err) {
+            console.error('Error getting cookie:', key, err);
+            return undefined;
+          }
+        },
+        set: (key: string, value: string, options: any) => {
+          try {
+            cookies.set(key, value, options);
+          } catch (err) {
+            console.error('Error setting cookie:', key, err);
+          }
+        },
+        remove: (key: string, options: any) => {
+          try {
+            cookies.delete(key, options);
+          } catch (err) {
+            console.error('Error removing cookie:', key, err);
+          }
+        },
+      },
+    });
+  } catch (err) {
+    console.error('💥 Error creating authenticated Supabase client:', err);
+    throw err;
   }
-
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
-    db: { schema: 'public' },
-    cookies: {
-      get: (key: string) => cookies.get(key)?.value,
-      set: (key: string, value: string, options: any) => {
-        cookies.set(key, value, options);
-      },
-      remove: (key: string, options: any) => {
-        cookies.delete(key, options);
-      },
-    },
-  });
 }
 

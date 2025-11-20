@@ -67,11 +67,13 @@ export default function LoginForm() {
         console.log('✅ Login successful! Result:', result);
         console.log('🔄 Redirecting to /admin...');
         
-        // Small delay to ensure cookies are set
+        // Force a hard reload to ensure cookies are properly set
+        // Use window.location.replace to avoid back button issues
         setTimeout(() => {
           console.log('🔄 Executing redirect now...');
-          window.location.href = "/admin";
-        }, 100);
+          // Try to reload first to ensure cookies are set, then redirect
+          window.location.replace("/admin");
+        }, 200);
       } else {
         console.error('❌ Login not successful - result.success is false:', result);
         setError(result.error || "Neočekivana greška pri prijavi");

@@ -221,6 +221,9 @@ export const POST: APIRoute = async ({ request }) => {
         status: 201,
         headers: {
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
         },
       }
     );
@@ -232,18 +235,22 @@ export const POST: APIRoute = async ({ request }) => {
     if (error instanceof Error) {
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
+      console.error('Error name:', error.name);
     }
     
     return new Response(
       JSON.stringify({
         success: false,
         error: 'Dogodila se greška pri kreiranju rezervacije',
-        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined,
+        details: import.meta.env.DEV ? (error instanceof Error ? error.message : String(error)) : undefined,
       }),
       { 
         status: 500,
         headers: {
           'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
         },
       }
     );
