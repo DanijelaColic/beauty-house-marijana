@@ -1,7 +1,7 @@
 // Time slot calculation and availability logic
 import { addMinutes, isWithinInterval, parseISO } from 'date-fns';
 import { zonedTimeToUtc } from 'date-fns-tz';
-import type { BusinessHours, TimeOff, Booking, TimeSlot, Service } from '@/types';
+import type { BusinessHours, TimeOff, Booking, TimeSlot, Service } from '../types';
 
 const BUSINESS_TIMEZONE = 'Europe/Zagreb';
 const SLOT_INTERVAL = 15; // minutes between slots

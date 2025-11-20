@@ -7,7 +7,7 @@ import type {
   TimeOff,
   BookingStatus,
   StaffProfile
-} from '@/types';
+} from '../types';
 
 // Environment variables
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;

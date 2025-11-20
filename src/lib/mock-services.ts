@@ -1,5 +1,5 @@
 // Mock data for services
-import type { Service } from '@/types';
+import type { Service } from '../types';
 
 export const mockServices: Service[] = [
   {

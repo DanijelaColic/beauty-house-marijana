@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { createClient } from "@supabase/supabase-js";
 import { createAuthenticatedSupabaseClient, authService } from "../../../lib/auth";
 
 export const prerender = false;
@@ -144,7 +145,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Try with service role client first (bypasses RLS)
     if (serviceRoleKey && supabaseUrl) {
       try {
-        const { createClient } = await import('@supabase/supabase-js');
         const serviceClient = createClient(supabaseUrl, serviceRoleKey, {
           db: { schema: 'public' },
         });

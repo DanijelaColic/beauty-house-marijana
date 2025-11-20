@@ -1,5 +1,5 @@
 // Mock data for staff members
-import type { Staff } from '@/types';
+import type { Staff } from '../types';
 
 export const mockStaff: Staff[] = [
   {

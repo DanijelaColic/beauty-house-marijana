@@ -1,6 +1,6 @@
 // Authentication utilities for staff
 import { supabase } from './supabase';
-import type { StaffProfile, AuthSession } from '@/types';
+import type { StaffProfile, AuthSession } from '../types';
 import { createServerClient } from '@supabase/ssr';
 import type { AstroCookies } from 'astro';
 
