@@ -469,14 +469,31 @@ export function createAuthenticatedSupabaseClient(cookies: AstroCookies) {
         },
         set: (key: string, value: string, options: any) => {
           try {
-            cookies.set(key, value, options);
+            // Ensure proper cookie options for Vercel
+            const cookieOptions: any = {
+              ...options,
+              path: options?.path || '/',
+              sameSite: options?.sameSite || 'lax',
+              httpOnly: options?.httpOnly !== false, // Default to httpOnly for security
+            };
+            
+            // Set secure flag in production (Vercel always uses HTTPS)
+            if (import.meta.env.PROD) {
+              cookieOptions.secure = true;
+            }
+            
+            cookies.set(key, value, cookieOptions);
           } catch (err) {
             console.error('Error setting cookie:', key, err);
           }
         },
         remove: (key: string, options: any) => {
           try {
-            cookies.delete(key, options);
+            const deleteOptions: any = {
+              ...options,
+              path: options?.path || '/',
+            };
+            cookies.delete(key, deleteOptions);
           } catch (err) {
             console.error('Error removing cookie:', key, err);
           }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import hr from 'date-fns/locale/hr';
+import hr from 'date-fns/locale/hr/index.js';
 import type { StaffProfile, Booking } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';

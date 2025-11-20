@@ -2,34 +2,33 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import AdminLayout from '@/components/admin/AdminLayout';
 import BookingsList from '@/components/admin/BookingsList';
+import { createAuthenticatedSupabaseClient } from '@/lib/auth';
 
-// Check if user is authenticated
-const sessionCookie = Astro.cookies.get('staff_session');
-
-if (!sessionCookie) {
-  return Astro.redirect('/admin/login');
-}
-
-// Verify session - pass all cookies from request
+// Check if user is authenticated using Supabase client directly
 try {
-  // Get all cookies from the request to pass to session API
-  const allCookies = Astro.request.headers.get('cookie') || '';
+  const supabase = createAuthenticatedSupabaseClient(Astro.cookies);
   
-  const sessionCheck = await fetch(`${Astro.url.origin}/api/auth/session`, {
-    headers: {
-      'Cookie': allCookies, // Pass all cookies including Supabase auth cookies
-    },
-  });
+  // Get Supabase user from session
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
   
-  console.log('Session check result:', sessionCheck.status, sessionCheck.statusText);
-  
-  if (!sessionCheck.ok) {
-    console.error('Session check failed, redirecting to login');
+  if (userError || !user) {
+    console.error('No Supabase session found:', userError?.message);
     return Astro.redirect('/admin/login');
   }
   
-  const sessionData = await sessionCheck.json();
-  console.log('Session data:', sessionData.success ? 'Valid' : 'Invalid');
+  // Get staff profile
+  const { data: profileData, error: profileError } = await supabase
+    .from('staff_profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .single();
+  
+  if (profileError || !profileData || !profileData.active) {
+    console.error('Staff profile error:', profileError?.message);
+    return Astro.redirect('/admin/login');
+  }
+  
+  console.log('✅ Session valid:', { userId: user.id, role: profileData.role });
 } catch (err) {
   console.error('Session check error:', err);
   return Astro.redirect('/admin/login');

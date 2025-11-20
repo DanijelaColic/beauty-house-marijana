@@ -2,9 +2,18 @@ import type { APIRoute } from 'astro';
 import { createAuthenticatedSupabaseClient } from '../../../lib/auth';
 
 
-export const GET: APIRoute = async ({ cookies }) => {
+export const GET: APIRoute = async ({ cookies, request }) => {
   try {
     console.log('🔍 GET /api/auth/session - Checking session...');
+    
+    // Log available cookies for debugging
+    const cookieHeader = request.headers.get('cookie') || '';
+    console.log('🍪 Available cookies:', {
+      hasCookieHeader: !!cookieHeader,
+      cookieHeaderLength: cookieHeader.length,
+      cookieNames: cookieHeader.split(';').map(c => c.split('=')[0].trim()).filter(Boolean),
+      hasStaffSession: !!cookies.get('staff_session'),
+    });
     
     // Use authenticated Supabase client to read session from cookies
     const supabase = createAuthenticatedSupabaseClient(cookies);

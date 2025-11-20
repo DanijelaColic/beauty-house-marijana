@@ -2,47 +2,46 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import AdminLayout from '@/components/admin/AdminLayout';
 import StaffAvailabilityView from '@/components/admin/StaffAvailabilityView';
+import { createAuthenticatedSupabaseClient } from '@/lib/auth';
 
-// Check if user is authenticated
-const sessionCookie = Astro.cookies.get('staff_session');
+// Check if user is authenticated using Supabase client directly
+let userRole: 'owner' | 'staff' | null = null;
+let currentStaffId: string | undefined = undefined;
+let currentStaffName: string | undefined = undefined;
 
-if (!sessionCookie) {
-  return Astro.redirect('/admin/login');
-}
-
-// Verify session - pass all cookies from request
 try {
-  // Get all cookies from the request to pass to session API
-  const allCookies = Astro.request.headers.get('cookie') || '';
+  const supabase = createAuthenticatedSupabaseClient(Astro.cookies);
   
-  const sessionCheck = await fetch(`${Astro.url.origin}/api/auth/session`, {
-    headers: {
-      'Cookie': allCookies, // Pass all cookies including Supabase auth cookies
-    },
-  });
+  // Get Supabase user from session
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
   
-  console.log('Session check result:', sessionCheck.status, sessionCheck.statusText);
-  
-  if (!sessionCheck.ok) {
-    console.error('Session check failed, redirecting to login');
+  if (userError || !user) {
+    console.error('No Supabase session found:', userError?.message);
     return Astro.redirect('/admin/login');
   }
   
-  const sessionData = await sessionCheck.json();
-  console.log('Session data:', sessionData.success ? 'Valid' : 'Invalid');
+  // Get staff profile
+  const { data: profileData, error: profileError } = await supabase
+    .from('staff_profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .single();
   
-  if (!sessionData.success || !sessionData.data?.profile) {
+  if (profileError || !profileData || !profileData.active) {
+    console.error('Staff profile error:', profileError?.message);
     return Astro.redirect('/admin/login');
   }
   
-  const userRole = sessionData.data.profile.role;
-  const currentStaffId = sessionData.data.profile.id;
-  const currentStaffName = sessionData.data.profile.fullName || sessionData.data.profile.email;
+  userRole = profileData.role as 'owner' | 'staff';
+  currentStaffId = profileData.id;
+  currentStaffName = profileData.full_name || profileData.email;
+  
+  console.log('✅ Session valid:', { userId: user.id, role: userRole });
 } catch (error) {
   console.error('Error checking session:', error);
   return Astro.redirect('/admin/login');
 }
----}
+---
 
 <BaseLayout
   title="Dostupnost | Beauty House Marijana"
