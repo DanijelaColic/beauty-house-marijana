@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { authService } from '@/lib/auth';
+import { authService } from '../../../lib/auth';
 
 
 export const POST: APIRoute = async ({ cookies }) => {

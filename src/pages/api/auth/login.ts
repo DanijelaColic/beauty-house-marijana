@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
-import { createAuthenticatedSupabaseClient } from "@/lib/auth";
-import { authService } from "@/lib/auth";
+import { createAuthenticatedSupabaseClient, authService } from "../../../lib/auth";
 
 export const prerender = false;
 

@@ -1,11 +1,11 @@
 // API route for finding the first available slot
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
-import { db } from '@/lib/supabase';
-import { mockServices } from '@/lib/mock-services';
-import { mockStaff } from '@/lib/mock-staff';
-import { createAuthenticatedSupabaseClient } from '@/lib/auth';
-import { SlotCalculator, getDefaultBusinessHours } from '@/lib/slots';
+import { db } from '../../../lib/supabase';
+import { mockServices } from '../../../lib/mock-services';
+import { mockStaff } from '../../../lib/mock-staff';
+import { createAuthenticatedSupabaseClient } from '../../../lib/auth';
+import { SlotCalculator, getDefaultBusinessHours } from '../../../lib/slots';
 import { parseISO, format, addDays, startOfDay } from 'date-fns';
 import { createClient } from '@supabase/supabase-js';
 

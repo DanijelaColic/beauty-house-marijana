@@ -1,6 +1,6 @@
 // API route for fetching staff members (admin only)
 import type { APIRoute } from 'astro';
-import { requireAuth, createAuthenticatedSupabaseClient } from '@/lib/auth';
+import { requireAuth, createAuthenticatedSupabaseClient } from '../../../lib/auth';
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   try {

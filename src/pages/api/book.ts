@@ -1,9 +1,9 @@
 // API route for creating bookings
 import type { APIRoute } from 'astro';
-import { bookingCreateRequestSchema } from '@/lib/validation';
-import { db } from '@/lib/supabase';
-import { sendBookingConfirmation, sendAdminNotification } from '@/lib/email';
-import { mockServices } from '@/lib/mock-services';
+import { bookingCreateRequestSchema } from '../../lib/validation';
+import { db } from '../../lib/supabase';
+import { sendBookingConfirmation, sendAdminNotification } from '../../lib/email';
+import { mockServices } from '../../lib/mock-services';
 
 
 export const POST: APIRoute = async ({ request }) => {

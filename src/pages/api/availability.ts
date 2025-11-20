@@ -1,13 +1,13 @@
 // API route for checking availability
 import type { APIRoute } from 'astro';
-import { availabilityRequestSchema } from '@/lib/validation';
-import { db } from '@/lib/supabase';
-import { mockServices } from '@/lib/mock-services';
-import { createAuthenticatedSupabaseClient } from '@/lib/auth';
+import { availabilityRequestSchema } from '../../lib/validation';
+import { db } from '../../lib/supabase';
+import { mockServices } from '../../lib/mock-services';
+import { createAuthenticatedSupabaseClient } from '../../lib/auth';
+import { SlotCalculator, getDefaultBusinessHours } from '../../lib/slots';
+import { parseISO, format } from 'date-fns';
 
 export const prerender = false;
-import { SlotCalculator, getDefaultBusinessHours } from '@/lib/slots';
-import { parseISO, format } from 'date-fns';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {

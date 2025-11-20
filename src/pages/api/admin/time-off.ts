@@ -1,7 +1,7 @@
 // API route for managing time-off (slobodni dani)
 import type { APIRoute } from 'astro';
-import { db } from '@/lib/supabase';
-import { createAuthenticatedSupabaseClient, requireAuth } from '@/lib/auth';
+import { db } from '../../../lib/supabase';
+import { createAuthenticatedSupabaseClient, requireAuth } from '../../../lib/auth';
 import { format, parseISO } from 'date-fns';
 
 export const prerender = false;

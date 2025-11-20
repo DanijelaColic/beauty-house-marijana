@@ -1,7 +1,7 @@
 // API route for fetching services
 import type { APIRoute } from 'astro';
-import { db } from '@/lib/supabase';
-import { mockServices } from '@/lib/mock-services';
+import { db } from '../../lib/supabase';
+import { mockServices } from '../../lib/mock-services';
 
 
 export const GET: APIRoute = async () => {

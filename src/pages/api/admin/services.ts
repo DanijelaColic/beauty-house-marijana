@@ -1,7 +1,7 @@
 // API route for managing services (admin only)
 import type { APIRoute } from 'astro';
-import { requireAuth, createAuthenticatedSupabaseClient } from '@/lib/auth';
-import { db } from '@/lib/supabase';
+import { requireAuth, createAuthenticatedSupabaseClient } from '../../../lib/auth';
+import { db } from '../../../lib/supabase';
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   try {

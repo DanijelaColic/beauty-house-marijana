@@ -1,8 +1,8 @@
 // API route for fetching staff members
 import type { APIRoute } from 'astro';
-import { db } from '@/lib/supabase';
-import { mockStaff } from '@/lib/mock-staff';
-import type { Staff } from '@/types';
+import { db } from '../../lib/supabase';
+import { mockStaff } from '../../lib/mock-staff';
+import type { Staff } from '../../types';
 
 export const GET: APIRoute = async () => {
   try {
