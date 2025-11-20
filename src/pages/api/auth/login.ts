@@ -136,7 +136,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // Get staff profile - use service role client to bypass RLS during login
     // This ensures we can always check if user has a staff profile, regardless of RLS policies
-    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    // Note: supabaseUrl is already declared above, reuse it
     const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
     
     let profileData = null;
