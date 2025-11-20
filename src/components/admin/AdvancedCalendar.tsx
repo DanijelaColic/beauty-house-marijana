@@ -26,7 +26,7 @@ import {
   setHours,
   setMinutes,
 } from 'date-fns';
-import { hr } from 'date-fns/locale';
+import { hr } from 'date-fns/locale/hr';
 import type { Booking } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
