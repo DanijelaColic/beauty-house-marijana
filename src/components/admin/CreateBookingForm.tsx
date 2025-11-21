@@ -23,7 +23,17 @@ interface CreateBookingFormProps {
     date?: Date;
     time?: string;
   };
-  onSuccess: () => void;
+  editingBooking?: {
+    id: string;
+    clientName: string;
+    clientEmail: string;
+    clientPhone?: string;
+    serviceId: string;
+    startAt: Date;
+    notes?: string;
+    staffId?: string;
+  };
+  onSuccess: () => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -32,6 +42,7 @@ export default function CreateBookingForm({
   currentStaffId,
   currentStaffName,
   prefillData,
+  editingBooking,
   onSuccess,
   onCancel,
 }: CreateBookingFormProps) {
@@ -63,8 +74,22 @@ export default function CreateBookingForm({
       setSelectedStaffId(currentStaffId);
     }
     
-    // Pre-fill form data if provided
-    if (prefillData) {
+    // Pre-fill form data if editing existing booking
+    if (editingBooking) {
+      setClientName(editingBooking.clientName);
+      setClientEmail(editingBooking.clientEmail);
+      setClientPhone(editingBooking.clientPhone || '');
+      setSelectedServiceId(editingBooking.serviceId);
+      setSelectedStaffId(editingBooking.staffId || '');
+      setNotes(editingBooking.notes || '');
+      
+      const startDate = editingBooking.startAt instanceof Date 
+        ? editingBooking.startAt 
+        : new Date(editingBooking.startAt);
+      setSelectedDate(startDate);
+      setSelectedTime(format(startDate, 'HH:mm'));
+    } else if (prefillData) {
+      // Pre-fill form data if provided (for new booking)
       if (prefillData.staffId) {
         setSelectedStaffId(prefillData.staffId);
       }
@@ -78,7 +103,7 @@ export default function CreateBookingForm({
         setSelectedTime(prefillData.time);
       }
     }
-  }, [userRole, currentStaffId, prefillData]);
+  }, [userRole, currentStaffId, prefillData, editingBooking]);
 
   // Load availability when service, staff, or date changes
   useEffect(() => {
@@ -167,9 +192,25 @@ export default function CreateBookingForm({
     e.preventDefault();
     setError('');
 
+    console.log('📝 Form submit triggered', {
+      editingBooking: !!editingBooking,
+      selectedServiceId,
+      selectedDate,
+      selectedTime,
+      clientName,
+      clientEmail,
+    });
+
     // Validation
     if (!selectedServiceId || !selectedDate || !selectedTime || !clientName || !clientEmail) {
-      setError('Molimo popunite sva obavezna polja');
+      const missingFields = [];
+      if (!selectedServiceId) missingFields.push('usluga');
+      if (!selectedDate) missingFields.push('datum');
+      if (!selectedTime) missingFields.push('vrijeme');
+      if (!clientName) missingFields.push('ime');
+      if (!clientEmail) missingFields.push('email');
+      setError(`Molimo popunite sva obavezna polja: ${missingFields.join(', ')}`);
+      console.error('❌ Validation failed:', missingFields);
       return;
     }
 
@@ -183,34 +224,109 @@ export default function CreateBookingForm({
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
       const startAt = `${dateStr}T${selectedTime}:00`;
 
-      const response = await fetch('/api/admin/bookings', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          serviceId: selectedServiceId,
-          staffId: finalStaffId,
+      if (editingBooking) {
+        // Update existing booking
+        const updateData = {
+          bookingId: editingBooking.id,
           clientName,
           clientEmail,
-          clientPhone: clientPhone || undefined,
+          clientPhone: clientPhone || null,
+          serviceId: selectedServiceId,
           startAt,
-          notes: notes || undefined,
-        }),
-      });
+          staffId: finalStaffId || null,
+          notes: notes || null,
+        };
+        
+        console.log('📝 Updating booking with data:', updateData);
+        
+        const response = await fetch('/api/admin/bookings', {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updateData),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Greška pri kreiranju rezervacije');
+        console.log('📥 API Response:', {
+          ok: response.ok,
+          status: response.status,
+          success: data.success,
+          data: data.data,
+          error: data.error,
+        });
+
+        if (!response.ok || !data.success) {
+          const errorMsg = data.error || 'Greška pri ažuriranju rezervacije';
+          console.error('❌ Update failed:', errorMsg);
+          setError(errorMsg);
+          setSubmitting(false);
+          return;
+        }
+
+        console.log('✅ Booking updated successfully:', data.data);
+        
+        // Success - refresh bookings and close form
+        try {
+          await onSuccess();
+        } catch (err) {
+          console.error('❌ Error in onSuccess callback:', err);
+          // Still close the form even if onSuccess fails
+        }
+        setSubmitting(false);
+      } else {
+        // Create new booking
+        const response = await fetch('/api/admin/bookings', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            serviceId: selectedServiceId,
+            staffId: finalStaffId,
+            clientName,
+            clientEmail,
+            clientPhone: clientPhone || undefined,
+            startAt,
+            notes: notes || undefined,
+          }),
+        });
+
+        const data = await response.json();
+
+        console.log('📥 Create API Response:', {
+          ok: response.ok,
+          status: response.status,
+          success: data.success,
+          data: data.data,
+          error: data.error,
+        });
+
+        if (!response.ok || !data.success) {
+          const errorMsg = data.error || 'Greška pri kreiranju rezervacije';
+          console.error('❌ Create failed:', errorMsg);
+          setError(errorMsg);
+          setSubmitting(false);
+          return;
+        }
+
+        console.log('✅ Booking created successfully:', data.data);
+        
+        // Success - refresh bookings and close form
+        try {
+          await onSuccess();
+        } catch (err) {
+          console.error('❌ Error in onSuccess callback:', err);
+          // Still close the form even if onSuccess fails
+        }
+        setSubmitting(false);
       }
-
-      // Success - refresh bookings and close form
-      onSuccess();
     } catch (err: any) {
-      console.error('Error creating booking:', err);
-      setError(err.message || 'Greška pri kreiranju rezervacije');
+      console.error('Error saving booking:', err);
+      setError(err.message || (editingBooking ? 'Greška pri ažuriranju rezervacije' : 'Greška pri kreiranju rezervacije'));
     } finally {
       setSubmitting(false);
     }
@@ -286,7 +402,9 @@ export default function CreateBookingForm({
       >
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Nova rezervacija</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {editingBooking ? 'Uredi rezervaciju' : 'Nova rezervacija'}
+            </h2>
             <Button variant="ghost" size="icon" onClick={onCancel}>
               <X className="w-5 h-5" />
             </Button>
@@ -499,7 +617,9 @@ export default function CreateBookingForm({
                 Odustani
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Kreiranje...' : 'Kreiraj rezervaciju'}
+                {submitting 
+                  ? (editingBooking ? 'Ažuriranje...' : 'Kreiranje...') 
+                  : (editingBooking ? 'Spremi promjene' : 'Kreiraj rezervaciju')}
               </Button>
             </div>
           </form>

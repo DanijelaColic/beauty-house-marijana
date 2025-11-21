@@ -186,14 +186,29 @@ export const POST: APIRoute = async ({ request }) => {
       });
 
       // Send confirmation to client
-      await sendBookingConfirmation(emailData);
+      const emailSent = await sendBookingConfirmation(emailData);
+      
+      if (!emailSent) {
+        console.warn('⚠️ Failed to send booking confirmation email, but booking was created successfully');
+      }
       
       // Send notification to admin
-      await sendAdminNotification(emailData);
+      const adminEmailSent = await sendAdminNotification(emailData);
       
-      console.log('📧 Emails sent successfully');
+      if (!adminEmailSent) {
+        console.warn('⚠️ Failed to send admin notification email, but booking was created successfully');
+      }
+      
+      if (emailSent && adminEmailSent) {
+        console.log('✅ All emails sent successfully');
+      } else {
+        console.warn('⚠️ Some emails failed to send. Check RESEND_API_KEY in Vercel environment variables.');
+      }
     } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+      console.error('❌ Email sending exception:', emailError);
+      if (emailError instanceof Error) {
+        console.error('❌ Email error message:', emailError.message);
+      }
       // Don't fail the booking if email fails
     }
 

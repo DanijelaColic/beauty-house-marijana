@@ -202,8 +202,14 @@ function AdvancedCalendar({
                         <div
                           className="bg-blue-500 text-white rounded px-2 py-1 text-sm cursor-pointer hover:bg-blue-600"
                           onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
-                            onBookingClick?.(booking);
+                            console.log('📅 AdvancedCalendar: Booking clicked in day view:', booking.id, booking.clientName);
+                            if (onBookingClick) {
+                              onBookingClick(booking);
+                            } else {
+                              console.warn('⚠️ onBookingClick is not defined!');
+                            }
                           }}
                         >
                           <div className="font-semibold">{booking.clientName}</div>

@@ -168,8 +168,11 @@ export class SupabaseService {
     return this.formatBooking(booking);
   }
 
-  async getBookingById(id: string): Promise<Booking | null> {
-    const { data, error } = await this.client
+  async getBookingById(id: string, authenticatedClient?: any): Promise<Booking | null> {
+    // Use authenticated client if provided (for staff/admin), otherwise use default client
+    const client = authenticatedClient || this.client;
+    
+    const { data, error } = await client
       .from('bookings')
       .select(`
         *,
@@ -265,15 +268,64 @@ export class SupabaseService {
     status?: BookingStatus;
     notes?: string;
     adminId?: string;
+    clientName?: string;
+    clientEmail?: string;
+    clientPhone?: string;
+    serviceId?: string;
+    startAt?: Date | string;
+    staffId?: string | null;
   }, authenticatedClient?: any): Promise<Booking> {
     // Use authenticated client if provided (for staff/admin), otherwise use default client
     const client = authenticatedClient || this.client;
     
     const updateObj: any = {};
-    if (updateData.status) updateObj.status = updateData.status;
+    if (updateData.status !== undefined) updateObj.status = updateData.status;
     if (updateData.notes !== undefined) updateObj.notes = updateData.notes;
-    if (updateData.adminId) updateObj.admin_id = updateData.adminId;
+    if (updateData.adminId !== undefined) updateObj.admin_id = updateData.adminId;
+    if (updateData.clientName !== undefined) updateObj.client_name = updateData.clientName;
+    if (updateData.clientEmail !== undefined) updateObj.client_email = updateData.clientEmail.toLowerCase();
+    if (updateData.clientPhone !== undefined) updateObj.client_phone = updateData.clientPhone || null;
+    if (updateData.serviceId !== undefined) updateObj.service_id = updateData.serviceId;
+    if (updateData.staffId !== undefined) {
+      // Allow setting to null to remove staff assignment
+      updateObj.staff_id = updateData.staffId || null;
+    }
+    
+    // If startAt is provided, calculate endAt based on service duration
+    if (updateData.startAt) {
+      const startAtDate = updateData.startAt instanceof Date ? updateData.startAt : new Date(updateData.startAt);
+      
+      // Get service to calculate end time
+      let service;
+      try {
+        if (updateData.serviceId) {
+          service = await this.getServiceById(updateData.serviceId);
+        } else {
+          // Get current booking to find service - use authenticated client if available
+          const currentBooking = await this.getBookingById(id, authenticatedClient);
+          if (currentBooking?.serviceId) {
+            service = await this.getServiceById(currentBooking.serviceId);
+          }
+        }
+        
+        if (service) {
+          updateObj.start_at = startAtDate.toISOString();
+          const endAtDate = new Date(startAtDate.getTime() + service.duration * 60000);
+          updateObj.end_at = endAtDate.toISOString();
+        } else {
+          console.warn('⚠️ Service not found, updating start_at only');
+          updateObj.start_at = startAtDate.toISOString();
+          // If we can't get service, keep existing end_at or calculate from startAt
+        }
+      } catch (err: any) {
+        console.error('❌ Error getting service for end time calculation:', err);
+        // Still update start_at even if we can't calculate end_at
+        updateObj.start_at = startAtDate.toISOString();
+      }
+    }
 
+    console.log('📝 Supabase update object:', updateObj);
+    
     const { data: booking, error } = await client
       .from('bookings')
       .update(updateObj)
@@ -285,8 +337,29 @@ export class SupabaseService {
       `)
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Supabase update error:', error);
+      throw error;
+    }
+    
+    if (!booking) {
+      throw new Error('Booking not found after update');
+    }
+    
+    console.log('✅ Supabase update successful:', booking.id);
     return this.formatBooking(booking);
+  }
+
+  async deleteBooking(id: string, authenticatedClient?: any): Promise<void> {
+    // Use authenticated client if provided (for staff/admin), otherwise use default client
+    const client = authenticatedClient || this.client;
+    
+    const { error } = await client
+      .from('bookings')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
   }
 
   // === STAFF ===

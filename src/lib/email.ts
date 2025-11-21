@@ -23,12 +23,15 @@ export interface BookingEmailData {
 
 export async function sendBookingConfirmation(data: BookingEmailData): Promise<boolean> {
   if (!resend) {
-    console.warn('Resend not configured, skipping email send');
+    console.warn('⚠️ Resend not configured - RESEND_API_KEY missing. Skipping email send.');
+    console.warn('⚠️ To enable emails, set RESEND_API_KEY in Vercel environment variables.');
     return true; // Don't fail the booking if email is not configured
   }
 
   try {
-    const { error } = await resend.emails.send({
+    console.log('📧 Attempting to send booking confirmation email to:', data.clientEmail);
+    
+    const { data: emailResponse, error } = await resend.emails.send({
       from: 'Beauty House by Marijana Talović <onboarding@resend.dev>',
       to: [data.clientEmail],
       subject: `Potvrda rezervacije - ${data.serviceName}`,
@@ -36,14 +39,26 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<b
     });
 
     if (error) {
-      console.error('Resend error:', error);
+      console.error('❌ Resend API error:', error);
+      console.error('❌ Error details:', JSON.stringify(error, null, 2));
       return false;
     }
 
-    console.log('✅ Booking confirmation email sent to:', data.clientEmail);
-    return true;
+    if (emailResponse?.id) {
+      console.log('✅ Booking confirmation email sent successfully!');
+      console.log('✅ Email ID:', emailResponse.id);
+      console.log('✅ Sent to:', data.clientEmail);
+      return true;
+    }
+
+    console.warn('⚠️ Email sent but no response ID received');
+    return true; // Assume success if no error
   } catch (error) {
-    console.error('Email sending error:', error);
+    console.error('❌ Email sending exception:', error);
+    if (error instanceof Error) {
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
+    }
     return false;
   }
 }

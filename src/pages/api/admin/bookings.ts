@@ -247,7 +247,17 @@ export const PATCH: APIRoute = async ({ request, cookies }) => {
     // Create authenticated Supabase client to respect RLS policies
     const authenticatedClient = createAuthenticatedSupabaseClient(cookies);
 
-    const { bookingId, status, notes } = await request.json();
+    const {
+      bookingId,
+      status,
+      notes,
+      clientName,
+      clientEmail,
+      clientPhone,
+      serviceId,
+      startAt,
+      staffId,
+    } = await request.json();
 
     if (!bookingId) {
       return new Response(
@@ -262,12 +272,31 @@ export const PATCH: APIRoute = async ({ request, cookies }) => {
       );
     }
 
+    // Prepare update data - only include fields that are provided
+    // Note: adminId is not included because it has a foreign key constraint
+    // that references the 'staff' table, not auth.users. We don't need to update it.
+    const updateData: any = {};
+    
+    // Only include fields that are explicitly provided (not undefined)
+    if (status !== undefined) updateData.status = status;
+    if (notes !== undefined) updateData.notes = notes;
+    if (clientName !== undefined) updateData.clientName = clientName;
+    if (clientEmail !== undefined) updateData.clientEmail = clientEmail;
+    if (clientPhone !== undefined) updateData.clientPhone = clientPhone;
+    if (serviceId !== undefined) updateData.serviceId = serviceId;
+    if (startAt !== undefined) updateData.startAt = startAt;
+    if (staffId !== undefined) updateData.staffId = staffId;
+    
+    console.log('📝 Updating booking:', bookingId, 'with data:', updateData);
+    
     // Update booking using authenticated client
-    const booking = await db.updateBooking(bookingId, {
-      status,
-      notes,
-      adminId: authCheck.session.user.id,
-    }, authenticatedClient);
+    const booking = await db.updateBooking(
+      bookingId,
+      updateData,
+      authenticatedClient
+    );
+    
+    console.log('✅ Booking updated successfully:', booking.id);
 
     return new Response(
       JSON.stringify({
@@ -279,12 +308,89 @@ export const PATCH: APIRoute = async ({ request, cookies }) => {
         headers: { 'Content-Type': 'application/json' },
       }
     );
-  } catch (err) {
-    console.error('Update booking API error:', err);
+  } catch (err: any) {
+    console.error('❌ Update booking API error:', err);
+    console.error('Error details:', {
+      message: err.message,
+      stack: err.stack,
+      name: err.name,
+      code: err.code,
+      details: err.details,
+      hint: err.hint,
+    });
     return new Response(
       JSON.stringify({
         success: false,
         error: 'Greška pri ažuriranju rezervacije',
+        details: import.meta.env.DEV ? err.message : undefined,
+        code: import.meta.env.DEV ? err.code : undefined,
+        hint: import.meta.env.DEV ? err.hint : undefined,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+};
+
+export const DELETE: APIRoute = async ({ request, cookies }) => {
+  try {
+    // Check if user is authenticated staff
+    const authCheck = await requireAuth(request, cookies);
+
+    if (!authCheck.authorized || !authCheck.session) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: authCheck.error || 'Nemate pristup ovom resursu',
+        }),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Create authenticated Supabase client
+    const authenticatedClient = createAuthenticatedSupabaseClient(cookies);
+
+    const url = new URL(request.url);
+    const bookingId = url.searchParams.get('id');
+
+    if (!bookingId) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'ID rezervacije je obavezan',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Delete booking using authenticated client
+    await db.deleteBooking(bookingId, authenticatedClient);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Rezervacija je uspješno obrisana',
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (err: any) {
+    console.error('Delete booking API error:', err);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Greška pri brisanju rezervacije',
+        details: import.meta.env.DEV ? err.message : undefined,
       }),
       {
         status: 500,

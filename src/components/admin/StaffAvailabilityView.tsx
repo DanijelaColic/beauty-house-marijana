@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { format } from 'date-fns';
 import hr from 'date-fns/locale/hr/index.js';
 import type { StaffProfile, Booking } from '@/types';
@@ -38,10 +39,23 @@ export default function StaffAvailabilityView({
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [updatingBookingId, setUpdatingBookingId] = useState<string | null>(null);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Debug: log when selectedBooking changes
+  useEffect(() => {
+    if (selectedBooking) {
+      console.log('✅ Modal should be visible, selectedBooking:', selectedBooking.id, selectedBooking.clientName);
+      console.log('✅ editingBooking:', editingBooking ? editingBooking.id : 'null');
+      console.log('✅ window check:', typeof window !== 'undefined');
+    } else {
+      console.log('❌ Modal should be hidden, selectedBooking is null');
+    }
+  }, [selectedBooking, editingBooking]);
 
   useEffect(() => {
     // Allow both admin and staff to select any staff member
@@ -185,6 +199,92 @@ export default function StaffAvailabilityView({
     );
   }
 
+  // Helper function for status badge - must be defined before use in JSX
+  const getStatusBadge = (status: string) => {
+    const badges = {
+      CONFIRMED: 'bg-green-100 text-green-800',
+      PENDING: 'bg-yellow-100 text-yellow-800',
+      CANCELED: 'bg-red-100 text-red-800',
+      NO_SHOW: 'bg-gray-100 text-gray-800',
+    };
+    const labels = {
+      CONFIRMED: 'Potvrđeno',
+      PENDING: 'Na čekanju',
+      CANCELED: 'Otkazano',
+      NO_SHOW: 'Nije došao',
+    };
+    return (
+      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${badges[status as keyof typeof badges]}`}>
+        {labels[status as keyof typeof labels]}
+      </span>
+    );
+  };
+
+  const updateBookingStatus = async (bookingId: string, status: string) => {
+    try {
+      setUpdatingBookingId(bookingId);
+      const response = await fetch('/api/admin/bookings', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookingId,
+          status,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update booking');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Refresh bookings list
+        await loadBookings();
+      } else {
+        console.error('Error updating booking:', data.error);
+      }
+    } catch (err) {
+      console.error('Update booking error:', err);
+    } finally {
+      setUpdatingBookingId(null);
+    }
+  };
+
+  const deleteBooking = async (bookingId: string) => {
+    try {
+      setDeletingBookingId(bookingId);
+      const response = await fetch(`/api/admin/bookings?id=${bookingId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(errorData.error || 'Failed to delete booking');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Refresh bookings list and close modal
+        setSelectedBooking(null);
+        await loadBookings();
+      } else {
+        console.error('Error deleting booking:', data.error);
+        alert(data.error || 'Greška pri brisanju rezervacije');
+      }
+    } catch (err: any) {
+      console.error('Delete booking error:', err);
+      alert(err.message || 'Greška pri brisanju rezervacije');
+    } finally {
+      setDeletingBookingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -303,7 +403,12 @@ export default function StaffAvailabilityView({
                   <Card
                     key={booking.id}
                     className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => setSelectedBooking(booking)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('📋 Booking clicked:', booking.id, booking.clientName);
+                      setSelectedBooking(booking);
+                    }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -394,6 +499,7 @@ export default function StaffAvailabilityView({
               setShowCreateForm(true);
             }}
             onBookingClick={(booking) => {
+              console.log('📋 AdvancedCalendar booking clicked:', booking.id, booking.clientName);
               setSelectedBooking(booking);
             }}
           />
@@ -427,15 +533,21 @@ export default function StaffAvailabilityView({
       )}
 
       {/* Modal za detalje rezervacije */}
-      {selectedBooking && (
+      {selectedBooking && !editingBooking && typeof window !== 'undefined' ? createPortal(
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedBooking(null)}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4"
+          style={{ zIndex: 9999 }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              console.log('🔄 Closing modal (background click)');
+              setSelectedBooking(null);
+            }
+          }}
         >
-          <Card
-            className="max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
+            <Card
+              className="max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-white"
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold text-gray-900">
@@ -499,116 +611,150 @@ export default function StaffAvailabilityView({
                   )}
                 </div>
 
-                <div className="flex space-x-2 pt-4 border-t">
-                  {selectedBooking.status === 'PENDING' && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={async () => {
-                          await updateBookingStatus(selectedBooking.id, 'CONFIRMED');
-                          setSelectedBooking(null);
-                        }}
-                        disabled={updatingBookingId === selectedBooking.id}
-                        className="text-green-600 border-green-600 hover:bg-green-50"
-                      >
-                        {updatingBookingId === selectedBooking.id
-                          ? 'Ažuriranje...'
-                          : 'Potvrdi'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={async () => {
-                          await updateBookingStatus(selectedBooking.id, 'CANCELED');
-                          setSelectedBooking(null);
-                        }}
-                        disabled={updatingBookingId === selectedBooking.id}
-                        className="text-red-600 border-red-600 hover:bg-red-50"
-                      >
-                        {updatingBookingId === selectedBooking.id
-                          ? 'Ažuriranje...'
-                          : 'Otkaži'}
-                      </Button>
-                    </>
+                {/* Informacije o kreiranju rezervacije */}
+                <div className="pt-4 border-t space-y-2 text-sm text-gray-500">
+                  <p>
+                    <strong>Kreirano:</strong>{' '}
+                    {selectedBooking.createdAt instanceof Date &&
+                    !isNaN(selectedBooking.createdAt.getTime())
+                      ? format(
+                          selectedBooking.createdAt,
+                          'dd.MM.yyyy. u HH:mm',
+                          { locale: hr }
+                        )
+                      : selectedBooking.createdAt
+                      ? format(
+                          new Date(selectedBooking.createdAt),
+                          'dd.MM.yyyy. u HH:mm',
+                          { locale: hr }
+                        )
+                      : 'N/A'}
+                  </p>
+                  {selectedBooking.updatedAt &&
+                    selectedBooking.createdAt &&
+                    selectedBooking.updatedAt.getTime() !==
+                      (selectedBooking.createdAt instanceof Date
+                        ? selectedBooking.createdAt.getTime()
+                        : new Date(selectedBooking.createdAt).getTime()) && (
+                      <p>
+                        <strong>Ažurirano:</strong>{' '}
+                        {selectedBooking.updatedAt instanceof Date &&
+                        !isNaN(selectedBooking.updatedAt.getTime())
+                          ? format(
+                              selectedBooking.updatedAt,
+                              'dd.MM.yyyy. u HH:mm',
+                              { locale: hr }
+                            )
+                          : format(
+                              new Date(selectedBooking.updatedAt),
+                              'dd.MM.yyyy. u HH:mm',
+                              { locale: hr }
+                            )}
+                      </p>
+                    )}
+                  {selectedBooking.adminId && (
+                    <p>
+                      <strong>Kreirao/la:</strong> Admin (ID: {selectedBooking.adminId.substring(0, 8)}...)
+                    </p>
                   )}
-                  {selectedBooking.status === 'CONFIRMED' && (
+                  {!selectedBooking.adminId && (
+                    <p>
+                      <strong>Kreirao/la:</strong> Gost (online rezervacija)
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2 pt-4 border-t">
+                  {/* Gumbovi za akcije */}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingBooking(selectedBooking);
+                        setSelectedBooking(null);
+                      }}
+                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                    >
+                      Uredi
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={async () => {
-                        await updateBookingStatus(selectedBooking.id, 'CANCELED');
+                        if (confirm('Jeste li sigurni da želite obrisati ovu rezervaciju?')) {
+                          await deleteBooking(selectedBooking.id);
+                        }
+                      }}
+                      disabled={deletingBookingId === selectedBooking.id}
+                      className="text-red-600 border-red-600 hover:bg-red-50"
+                    >
+                      {deletingBookingId === selectedBooking.id ? 'Brisanje...' : 'Obriši'}
+                    </Button>
+                  </div>
+                  
+                  {/* Gumbovi za status */}
+                  {selectedBooking.status === 'PENDING' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        await updateBookingStatus(selectedBooking.id, 'CONFIRMED');
                         setSelectedBooking(null);
                       }}
                       disabled={updatingBookingId === selectedBooking.id}
-                      className="text-red-600 border-red-600 hover:bg-red-50"
+                      className="text-green-600 border-green-600 hover:bg-green-50"
                     >
                       {updatingBookingId === selectedBooking.id
                         ? 'Ažuriranje...'
-                        : 'Otkaži'}
+                        : 'Potvrdi'}
                     </Button>
                   )}
                 </div>
               </div>
             </div>
           </Card>
-        </div>
+        </div>,
+        document.body
+      ) : null}
+
+      {/* Forma za uređivanje rezervacije */}
+      {editingBooking && (
+        <CreateBookingForm
+          userRole={userRole}
+          currentStaffId={editingBooking.staffId || selectedStaffId || currentStaffId}
+          currentStaffName={
+            userRole === 'owner' && editingBooking.staffId
+              ? staffMembers.find((s) => s.id === editingBooking.staffId)?.fullName ||
+                staffMembers.find((s) => s.id === editingBooking.staffId)?.email
+              : currentStaffName
+          }
+          editingBooking={{
+            id: editingBooking.id,
+            clientName: editingBooking.clientName,
+            clientEmail: editingBooking.clientEmail,
+            clientPhone: editingBooking.clientPhone,
+            serviceId: editingBooking.serviceId,
+            startAt: editingBooking.startAt instanceof Date 
+              ? editingBooking.startAt 
+              : new Date(editingBooking.startAt),
+            notes: editingBooking.notes,
+            staffId: editingBooking.staffId,
+          }}
+          onSuccess={async () => {
+            setEditingBooking(null);
+            // Reload bookings first to get updated data
+            await loadBookings();
+            // Close modal - user can reopen it to see updated data
+            setSelectedBooking(null);
+          }}
+          onCancel={() => {
+            setEditingBooking(null);
+            setSelectedBooking(null);
+          }}
+        />
       )}
     </div>
   );
-
-  const getStatusBadge = (status: string) => {
-    const badges = {
-      CONFIRMED: 'bg-green-100 text-green-800',
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      CANCELED: 'bg-red-100 text-red-800',
-      NO_SHOW: 'bg-gray-100 text-gray-800',
-    };
-    const labels = {
-      CONFIRMED: 'Potvrđeno',
-      PENDING: 'Na čekanju',
-      CANCELED: 'Otkazano',
-      NO_SHOW: 'Nije došao',
-    };
-    return (
-      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${badges[status as keyof typeof badges]}`}>
-        {labels[status as keyof typeof labels]}
-      </span>
-    );
-  };
-
-  const updateBookingStatus = async (bookingId: string, status: string) => {
-    try {
-      setUpdatingBookingId(bookingId);
-      const response = await fetch('/api/admin/bookings', {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          bookingId,
-          status,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update booking');
-      }
-
-      const data = await response.json();
-      
-      if (data.success) {
-        // Refresh bookings list
-        await loadBookings();
-      } else {
-        console.error('Error updating booking:', data.error);
-      }
-    } catch (err) {
-      console.error('Update booking error:', err);
-    } finally {
-      setUpdatingBookingId(null);
-    }
-  };
 }
 
